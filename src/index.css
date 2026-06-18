@@ -1,0 +1,369 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-bg: 253 250 248;
+    --color-bg-dark: 247 241 238;
+    --color-fg: 33 30 30;
+    --brand: 203 74 93;        /* #CB4A5D */
+    --brand-hover: 150 53 67;  /* #963543 */
+    --brand-deep: 57 18 24;    /* #391218 */
+    --brand-soft: 236 158 169; /* #ec9ea9 */
+    --brand-tint: 203 74 93;   /* used with /20 etc */
+    --accent: 249 142 7;
+    --ring: 203 74 93;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-feature-settings: 'cv11', 'ss01', 'ss03';
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    background:
+      radial-gradient(1200px 600px at 50% -200px, rgba(203, 74, 93, 0.18), transparent 70%),
+      linear-gradient(180deg, #fdfaf8 0%, #f7f1ee 100%);
+    background-attachment: fixed;
+  }
+
+  ::selection {
+    background: rgba(203, 74, 93, 0.2);
+    color: #5d2129;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(203, 74, 93, 0.25);
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(203, 74, 93, 0.5);
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  h1, h2, h3, h4 {
+    font-family: 'Poppins', sans-serif;
+    letter-spacing: -0.02em;
+  }
+
+  body, p, button, input, textarea, select, label, li, span, a {
+    font-family: 'Inter', sans-serif;
+  }
+}
+
+@layer components {
+  .container-pro {
+    @apply mx-auto w-full max-w-7xl px-5 sm:px-7 lg:px-10;
+  }
+
+  .section-pad {
+    @apply py-10 sm:py-12 lg:py-16;
+  }
+
+  /* Premium button system */
+  .btn {
+    @apply relative inline-flex items-center justify-center gap-2 select-none
+           rounded-full font-semibold tracking-tight
+           transition-all duration-300 ease-out-expo
+           focus-visible:outline-none focus-visible:ring-4
+           disabled:opacity-50 disabled:cursor-not-allowed
+           whitespace-nowrap;
+  }
+
+  .btn-primary {
+    @apply btn bg-brand-600 text-white px-6 py-3.5 text-[15px]
+           shadow-elev hover:bg-brand-700 hover:shadow-glow
+           hover:-translate-y-0.5 active:translate-y-0
+           focus-visible:ring-brand-500/30;
+  }
+
+  .btn-primary-xl {
+    @apply btn-primary px-7 py-4 text-base sm:text-lg;
+  }
+
+  .btn-ghost {
+    @apply btn text-ink-900 px-5 py-3 hover:bg-ink-900/5 focus-visible:ring-ink-900/10;
+  }
+
+  .btn-outline {
+    @apply btn px-5 py-3 text-ink-900 bg-white border border-ink-200
+           hover:border-brand-500 hover:text-brand-700 hover:bg-brand-50/40
+           focus-visible:ring-brand-500/20;
+  }
+
+  /* Glassmorphism cards */
+  .glass {
+    @apply bg-white/70 backdrop-blur-xl border border-white/60 shadow-soft;
+  }
+
+  .glass-dark {
+    background: linear-gradient(160deg, rgba(57, 18, 24, 0.95), rgba(57, 18, 24, 0.82));
+    @apply backdrop-blur-xl border border-white/10 text-white;
+  }
+
+  .card {
+    @apply rounded-3xl bg-white border border-ink-100 shadow-soft transition-all duration-500 ease-out-expo;
+  }
+
+  .card-hover {
+    @apply hover:-translate-y-1 hover:shadow-elev hover:border-brand-200;
+  }
+
+  /* Eyebrow label */
+  .eyebrow {
+    @apply inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.18em]
+           font-semibold text-brand-700 bg-brand-50 border border-brand-200/60
+           px-3 py-1.5 rounded-full;
+  }
+
+  /* Section heading */
+  .h-display {
+    @apply font-display text-4xl sm:text-5xl lg:text-[3.5rem] leading-[1.05] font-semibold text-ink-950;
+    letter-spacing: -0.03em;
+  }
+
+  .h-section {
+    @apply font-display text-3xl sm:text-4xl lg:text-5xl leading-[1.08] font-semibold text-ink-950;
+    letter-spacing: -0.025em;
+  }
+
+  .h-sub {
+    @apply font-display text-2xl sm:text-3xl leading-tight font-semibold text-ink-950;
+    letter-spacing: -0.02em;
+  }
+
+  /* Icon container — consistent style */
+  .icon-tile {
+    @apply inline-flex items-center justify-center w-11 h-11 rounded-2xl
+           bg-gradient-to-br from-brand-50 to-brand-100/60
+           text-brand-700 border border-brand-200/60
+           transition-all duration-500 ease-out-expo;
+  }
+
+  .icon-tile-lg {
+    @apply icon-tile w-14 h-14 rounded-[1.25rem];
+  }
+
+  .icon-tile-dark {
+    @apply inline-flex items-center justify-center w-11 h-11 rounded-2xl
+           bg-white/10 text-brand-200 border border-white/15
+           transition-all duration-500 ease-out-expo;
+  }
+
+  /* Decorative gradient text */
+  .grad-text {
+    background: linear-gradient(95deg, #5d2129 0%, #963543 40%, #CB4A5D 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .grad-text-warm {
+    background: linear-gradient(95deg, #b74706 0%, #f98e07 50%, #ffb01f 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Soft brand-tinted surface — uses #CB4A5D20 reference */
+  .surface-tint {
+    background-color: rgba(203, 74, 93, 0.06);
+  }
+
+  .surface-tint-strong {
+    background-color: rgba(203, 74, 93, 0.12);
+  }
+
+  /* Inputs — premium */
+  .input {
+    @apply w-full bg-white border border-ink-200 rounded-2xl px-4 py-3.5
+           text-[15px] text-ink-900 placeholder:text-ink-400
+           transition-all duration-300
+           focus:outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15
+           hover:border-ink-300;
+  }
+
+  .field-label {
+    @apply text-xs font-semibold tracking-wider uppercase text-ink-600 mb-2 inline-flex items-center gap-1.5;
+  }
+
+  /* Divider */
+  .divider-dot {
+    @apply inline-block w-1 h-1 rounded-full bg-ink-300 mx-2 align-middle;
+  }
+
+  /* Premium chip badge */
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full text-xs font-semibold
+           px-3 py-1 bg-ink-50 text-ink-700 border border-ink-100;
+  }
+
+  .chip-success {
+    @apply chip bg-brand-50 text-brand-700 border-brand-200/60;
+  }
+
+  .chip-warm {
+    @apply chip bg-accent-50 text-accent-700 border-accent-200/60;
+  }
+
+  /* Pulse beacon for play buttons */
+  .pulse-beacon {
+    @apply absolute inset-0 rounded-full;
+    box-shadow: 0 0 0 0 rgba(203, 74, 93, 0.55);
+    animation: pulseRing 2.2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+  }
+
+  /* Grain overlay */
+  .grain-overlay::after {
+    content: '';
+    @apply pointer-events-none absolute inset-0 opacity-[0.06] mix-blend-overlay;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.6 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* Marquee — two identical groups inside one w-max track. Animating to
+     translateX(-50%) shifts the track by exactly one group, so the loop is
+     seamless. The trailing pr-12 on each group keeps the seam gap even. */
+  .marquee-track {
+    @apply flex w-max shrink-0 items-center whitespace-nowrap;
+    animation: marquee 38s linear infinite;
+  }
+  .marquee-group {
+    @apply flex shrink-0 items-center gap-12 pr-12;
+  }
+
+  /* Magnetic hover utility (handled via JS) */
+  .magnet {
+    will-change: transform;
+    transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* Prose for policy pages */
+  .prose-policy h2 {
+    @apply font-display text-xl sm:text-2xl font-semibold text-ink-950 mt-10 mb-3;
+    letter-spacing: -0.02em;
+  }
+  .prose-policy h3 {
+    @apply font-display text-lg font-semibold text-ink-950 mt-6 mb-2;
+  }
+  .prose-policy p, .prose-policy li {
+    @apply text-ink-700 leading-relaxed text-[15.5px];
+  }
+  .prose-policy p {
+    @apply mb-4;
+  }
+  .prose-policy ul {
+    @apply space-y-2 list-disc pl-5 mb-4;
+  }
+  .prose-policy a {
+    @apply text-brand-700 underline-offset-2 hover:underline;
+  }
+  .prose-policy strong {
+    @apply text-ink-950 font-semibold;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .text-pretty {
+    text-wrap: pretty;
+  }
+
+  .mask-fade-r {
+    -webkit-mask-image: linear-gradient(to right, black 80%, transparent 100%);
+    mask-image: linear-gradient(to right, black 80%, transparent 100%);
+  }
+
+  .mask-fade-x {
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Safe area helpers for sticky CTAs */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* react-phone-number-input theme override */
+.PhoneInput {
+  @apply flex items-center w-full bg-white border border-ink-200 rounded-2xl pl-3 pr-4 py-2.5
+         transition-all duration-300
+         focus-within:border-brand-500 focus-within:ring-4 focus-within:ring-brand-500/15
+         hover:border-ink-300;
+}
+
+.PhoneInputCountry {
+  @apply flex items-center gap-1.5 mr-2 pr-2 border-r border-ink-200;
+}
+
+.PhoneInputCountryIcon {
+  @apply w-6 h-[18px] rounded-sm overflow-hidden shadow-sm;
+}
+
+.PhoneInputCountrySelectArrow {
+  @apply opacity-60 ml-1;
+}
+
+.PhoneInputInput {
+  @apply flex-1 bg-transparent border-0 outline-none text-[15px] py-1 text-ink-900
+         placeholder:text-ink-400;
+}
+
+.PhoneInputCountrySelect {
+  @apply text-ink-900;
+}
+
+/* Marquee keyframes defined directly here. Tailwind only emits @keyframes for
+   animation utilities it actually sees in markup (e.g. `animate-marquee`);
+   since the marquee uses the custom `.marquee-track` class, the keyframes were
+   never generated and the strip never moved. Defining them here guarantees it
+   animates on every device. */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* The top marquee is a slow, decorative brand strip — keep it scrolling even
+   when the OS requests reduced motion. The more specific !important rule beats
+   the global reduced-motion reset above. */
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: marquee 38s linear infinite !important;
+  }
+}

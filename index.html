@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#CB4A5D" />
+    <meta name="description" content="Control your blood sugar in 90 days without extreme diets or medication dependency. Clinically-guided 1:1 nutrition consultation by a UK-trained clinical nutritionist." />
+    <meta property="og:title" content="Suvidhi — Clinical Nutrition for Diabetes Reversal" />
+    <meta property="og:description" content="Control your blood sugar in 90 days without extreme diets or medication dependency." />
+    <meta property="og:type" content="website" />
+
+    <!-- Preconnects for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://checkout.razorpay.com" />
+    <link rel="preconnect" href="https://connect.facebook.net" />
+    <link rel="preconnect" href="https://calendly.com" />
+
+    <!-- Fonts: Poppins (headings) + Inter (body) — trimmed to only the weights actually used -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+    <!-- LCP image — preload the responsive variant matching the viewport -->
+    <link
+      rel="preload"
+      as="image"
+      href="/images/suvidhi/dsc00257-md.jpg"
+      imagesrcset="/images/suvidhi/dsc00257-sm.jpg 640w, /images/suvidhi/dsc00257-md.jpg 960w, /images/suvidhi/dsc00257.jpg 1600w"
+      imagesizes="(max-width: 640px) 90vw, (max-width: 1024px) 60vw, 420px"
+      fetchpriority="high"
+    />
+
+    <!--
+      Meta Pixel and other client analytics are initialised at runtime
+      inside src/lib/tracking.ts using the env-driven VITE_META_PIXEL_ID.
+      We deliberately do NOT hard-code the pixel ID here so the same build
+      can target prod / staging / dev environments via env vars.
+    -->
+    <title>Suvidhi — Control Blood Sugar in 90 Days, Clinically</title>
+  </head>
+  <body class="bg-cream text-ink-900 antialiased">
+    <noscript>
+      <p style="font-family: system-ui; padding: 24px; max-width: 480px; margin: 0 auto;">
+        Suvidhi runs on a modern browser with JavaScript enabled. Please enable
+        JavaScript and reload, or email us at innohealthbysush@gmail.com.
+      </p>
+    </noscript>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
