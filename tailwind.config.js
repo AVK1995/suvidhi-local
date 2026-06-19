@@ -51,6 +51,7 @@ export default {
       fontFamily: {
         display: ['"Poppins"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
         sans: ['"Inter"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        script: ['"Pacifico"', 'cursive'],
       },
       borderRadius: {
         '4xl': '2rem',

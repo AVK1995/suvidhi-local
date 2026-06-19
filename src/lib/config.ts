@@ -51,6 +51,29 @@ export const OFFER = {
   },
 } as const
 
+// Itemised value-stack — the "Recap of Everything You Will Get" pricing.
+// Every amount reads from env so the entire stack is editable without code.
+// The `core` items are the included deliverables; `bonus` items are the free
+// add-ons. Labels live here because they're product copy, not pricing.
+export interface ValueItem {
+  label: string
+  amount: number
+  kind: 'core' | 'bonus'
+}
+
+export const VALUE_STACK: readonly ValueItem[] = [
+  { label: 'The Postpartum Restore™ 25-Minute Guided Assessment', amount: num('VITE_VALUE_ASSESSMENT', 5000), kind: 'core' },
+  { label: 'The Postpartum Depletion Audit', amount: num('VITE_VALUE_DEPLETION_AUDIT', 1500), kind: 'core' },
+  { label: 'The Metabolic Recovery Audit', amount: num('VITE_VALUE_METABOLIC_AUDIT', 1500), kind: 'core' },
+  { label: 'The Supplement & Hair Recovery Audit', amount: num('VITE_VALUE_SUPPLEMENT_AUDIT', 1500), kind: 'core' },
+  { label: 'The Neuro-Endocrine Reset Audit', amount: num('VITE_VALUE_NEURO_AUDIT', 1500), kind: 'core' },
+  { label: '30-Minute Postpartum Assessment Call with Suvidhi', amount: num('VITE_VALUE_CALL', 2500), kind: 'bonus' },
+  { label: 'Private Postpartum Mothers Community', amount: num('VITE_VALUE_COMMUNITY', 3000), kind: 'bonus' },
+  { label: 'Monthly Group Coaching Sessions', amount: num('VITE_VALUE_COACHING', 4500), kind: 'bonus' },
+] as const
+
+export const VALUE_STACK_TOTAL = VALUE_STACK.reduce((sum, i) => sum + i.amount, 0)
+
 export const COUPON = {
   code: str('VITE_TEST_COUPON_CODE', 'tgotest2025').toUpperCase(),
   discountPct: num('VITE_TEST_COUPON_DISCOUNT_PCT', 100),

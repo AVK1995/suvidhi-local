@@ -70,7 +70,7 @@ export function Footer({ hideCTA = false }: FooterProps) {
               />
               <div className="flex flex-col sm:flex-row items-center gap-2.5 sm:gap-5 text-[12px] sm:text-[12.5px] uppercase tracking-[0.18em] font-semibold text-ink-600">
                 <span className="inline-flex items-center gap-1.5">
-                  <Clock className="w-3.5 h-3.5 text-accent-600" />
+                  <Clock className="w-3.5 h-3.5 text-brand-600" />
                   Offer expires in
                   <InlineMinSec minutes={15} />
                 </span>

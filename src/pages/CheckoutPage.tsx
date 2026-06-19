@@ -9,15 +9,14 @@ import {
   Check,
   ChevronDown,
   Clock,
-  CreditCard,
   Lock,
   Mail,
+  MapPin,
   ShieldCheck,
   Sparkles,
   Star,
   Tag,
   User,
-  Wallet,
   X,
 } from 'lucide-react'
 import { Container } from '@/components/ui/Container'
@@ -32,13 +31,14 @@ import { captureUtm, utmPayload, utmQueryString } from '@/lib/utm'
 import { pabblyEvent, pixelTrack, reportMilestone } from '@/lib/tracking'
 
 interface FormState {
-  name: string
+  firstName: string
+  lastName: string
   email: string
   phone: string | undefined
+  city: string
   condition: string
   hba1c: string
   consent: boolean
-  payment: 'upi' | 'card'
 }
 
 interface CouponState {
@@ -49,13 +49,14 @@ interface CouponState {
 }
 
 const initial: FormState = {
-  name: '',
+  firstName: '',
+  lastName: '',
   email: '',
   phone: undefined,
+  city: '',
   condition: '',
   hba1c: '',
   consent: false,
-  payment: 'upi',
 }
 
 const conditions = [
@@ -101,6 +102,7 @@ export default function CheckoutPage() {
   const discountAmount = Math.round((basePrice * coupon.discountPct) / 100)
   const payable = Math.max(0, basePrice - discountAmount)
   const isFreeAfterCoupon = coupon.applied && payable === 0
+  const fullName = `${form.firstName} ${form.lastName}`.trim()
 
   // Generate a session order ID once
   const [orderId] = useState(
@@ -148,11 +150,13 @@ export default function CheckoutPage() {
 
   const validate = (): boolean => {
     const next: Partial<Record<keyof FormState, string>> = {}
-    if (!form.name.trim()) next.name = 'Please share your name'
+    if (!form.firstName.trim()) next.firstName = 'Please share your first name'
+    if (!form.lastName.trim()) next.lastName = 'Please share your last name'
     if (!form.email.trim()) next.email = 'We need an email to send the call link'
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
       next.email = 'That email looks off — please check'
     if (!form.phone) next.phone = 'Please add a reachable number'
+    if (!form.city.trim()) next.city = 'Please add your town or city'
     if (!form.condition) next.condition = 'Pick the closest match'
     if (!form.hba1c) next.hba1c = 'Even a rough range helps'
     if (!form.consent) next.consent = 'Please accept the terms'
@@ -163,9 +167,10 @@ export default function CheckoutPage() {
   const goToBookACall = (paymentId?: string) => {
     pabblyEvent({
       event: 'payment.success',
-      name: form.name,
+      name: fullName,
       email: form.email,
       phone: form.phone,
+      city: form.city,
       condition: form.condition,
       hba1c: form.hba1c,
       amount: payable,
@@ -175,9 +180,10 @@ export default function CheckoutPage() {
       isTest: OFFER.price <= 1,
     })
     reportMilestone('Purchase', {
-      name: form.name,
+      name: fullName,
       email: form.email,
       phone: form.phone,
+      city: form.city,
       amount: payable,
       orderId,
       paymentId,
@@ -188,9 +194,10 @@ export default function CheckoutPage() {
     })
     navigate('/book-a-call' + utmQueryString(), {
       state: {
-        name: form.name,
+        name: fullName,
         email: form.email,
         phone: form.phone,
+        city: form.city,
         orderId,
         paymentId,
         amountPaid: payable,
@@ -207,9 +214,10 @@ export default function CheckoutPage() {
 
     // Track lead
     reportMilestone('Lead', {
-      name: form.name,
+      name: fullName,
       email: form.email,
       phone: form.phone,
+      city: form.city,
       amount: payable,
       coupon: coupon.applied ? coupon.code : undefined,
       condition: form.condition,
@@ -231,7 +239,7 @@ export default function CheckoutPage() {
       amount: payable,
       receipt: orderId,
       customer: {
-        name: form.name,
+        name: fullName,
         email: form.email,
         phone: form.phone,
       },
@@ -259,9 +267,10 @@ export default function CheckoutPage() {
         })
         pabblyEvent({
           event: 'payment.failed',
-          name: form.name,
+          name: fullName,
           email: form.email,
           phone: form.phone,
+          city: form.city,
           amount: payable,
           orderId,
           isTest: OFFER.price <= 1,
@@ -335,20 +344,37 @@ export default function CheckoutPage() {
                   </p>
                 </div>
 
-                <Field
-                  label="Your full name"
-                  error={errors.name}
-                  icon={<User className="w-4 h-4" />}
-                >
-                  <input
-                    className="input"
-                    type="text"
-                    placeholder="e.g. Mahesh Sharma"
-                    autoComplete="name"
-                    value={form.name}
-                    onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  />
-                </Field>
+                <div className="grid sm:grid-cols-2 gap-5">
+                  <Field
+                    label="First name"
+                    error={errors.firstName}
+                    icon={<User className="w-4 h-4" />}
+                  >
+                    <input
+                      className="input"
+                      type="text"
+                      placeholder="e.g. Mahesh"
+                      autoComplete="given-name"
+                      value={form.firstName}
+                      onChange={(e) => setForm({ ...form, firstName: e.target.value })}
+                    />
+                  </Field>
+
+                  <Field
+                    label="Last name"
+                    error={errors.lastName}
+                    icon={<User className="w-4 h-4" />}
+                  >
+                    <input
+                      className="input"
+                      type="text"
+                      placeholder="e.g. Sharma"
+                      autoComplete="family-name"
+                      value={form.lastName}
+                      onChange={(e) => setForm({ ...form, lastName: e.target.value })}
+                    />
+                  </Field>
+                </div>
 
                 <div className="grid sm:grid-cols-2 gap-5">
                   <Field
@@ -378,6 +404,21 @@ export default function CheckoutPage() {
                   </Field>
                 </div>
 
+                <Field
+                  label="Town / City"
+                  error={errors.city}
+                  icon={<MapPin className="w-4 h-4" />}
+                >
+                  <input
+                    className="input"
+                    type="text"
+                    placeholder="e.g. Mumbai"
+                    autoComplete="address-level2"
+                    value={form.city}
+                    onChange={(e) => setForm({ ...form, city: e.target.value })}
+                  />
+                </Field>
+
                 <div className="grid sm:grid-cols-2 gap-5">
                   <Field label="Your concern" error={errors.condition}>
                     <PremiumSelect
@@ -397,32 +438,6 @@ export default function CheckoutPage() {
                     />
                   </Field>
                 </div>
-
-                {/* Payment method — hidden if free */}
-                {!isFreeAfterCoupon && (
-                  <div className="pt-2">
-                    <div className="field-label">
-                      <CreditCard className="w-4 h-4" />
-                      Payment method · powered by Razorpay
-                    </div>
-                    <div className="grid sm:grid-cols-2 gap-3">
-                      <PaymentOption
-                        active={form.payment === 'upi'}
-                        onClick={() => setForm({ ...form, payment: 'upi' })}
-                        title="UPI"
-                        subtitle="GPay, PhonePe, Paytm, BHIM"
-                        icon={<Wallet className="w-5 h-5" />}
-                      />
-                      <PaymentOption
-                        active={form.payment === 'card'}
-                        onClick={() => setForm({ ...form, payment: 'card' })}
-                        title="Card / Netbanking"
-                        subtitle="Visa, Mastercard, Rupay, Wallets"
-                        icon={<CreditCard className="w-5 h-5" />}
-                      />
-                    </div>
-                  </div>
-                )}
 
                 <Checkbox
                   checked={form.consent}
@@ -468,9 +483,9 @@ export default function CheckoutPage() {
                     >
                       <div
                         role="alert"
-                        className="rounded-2xl border border-accent-200 bg-accent-50/80 p-4 flex items-start gap-3"
+                        className="rounded-2xl border border-brand-200 bg-brand-50/80 p-4 flex items-start gap-3"
                       >
-                        <span className="mt-0.5 inline-flex w-7 h-7 rounded-full bg-accent-100 text-accent-700 border border-accent-200 items-center justify-center shrink-0">
+                        <span className="mt-0.5 inline-flex w-7 h-7 rounded-full bg-brand-100 text-brand-700 border border-brand-200 items-center justify-center shrink-0">
                           <X className="w-4 h-4" strokeWidth={2.5} />
                         </span>
                         <div className="flex-1 min-w-0 text-[13.5px] leading-relaxed text-ink-800">
@@ -706,11 +721,11 @@ export default function CheckoutPage() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="inline-flex items-center gap-1 text-accent-300 text-[12px] font-semibold">
+                      <div className="inline-flex items-center gap-1 text-brand-300 text-[12px] font-semibold">
                         {[0, 1, 2, 3, 4].map((i) => (
                           <Star
                             key={i}
-                            className="w-3.5 h-3.5 fill-accent-400 text-accent-400"
+                            className="w-3.5 h-3.5 fill-brand-400 text-brand-400"
                           />
                         ))}
                       </div>
@@ -722,7 +737,7 @@ export default function CheckoutPage() {
 
                   <div className="mt-5 rounded-2xl bg-white/8 border border-white/12 p-4 backdrop-blur-md">
                     <div className="flex items-center justify-center gap-2 text-[11px] uppercase tracking-[0.2em] font-semibold text-cream/65 mb-3">
-                      <Clock className="w-3.5 h-3.5 text-accent-300" /> Offer ends in
+                      <Clock className="w-3.5 h-3.5 text-brand-300" /> Offer ends in
                     </div>
                     <Countdown minutes={15} variant="dark" />
                   </div>
@@ -802,65 +817,13 @@ function Field({
             animate={{ opacity: 1, height: 'auto', y: 0 }}
             exit={{ opacity: 0, height: 0, y: -4 }}
             transition={{ duration: 0.3 }}
-            className="mt-2 text-[12.5px] text-accent-700 font-medium"
+            className="mt-2 text-[12.5px] text-brand-700 font-medium"
           >
             {error}
           </motion.p>
         )}
       </AnimatePresence>
     </div>
-  )
-}
-
-function PaymentOption({
-  active,
-  onClick,
-  title,
-  subtitle,
-  icon,
-}: {
-  active: boolean
-  onClick: () => void
-  title: string
-  subtitle: string
-  icon: React.ReactNode
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        'group relative text-left flex items-center gap-3 px-4 py-3.5 rounded-2xl border-2 transition-all duration-300',
-        active
-          ? 'border-brand-500 bg-brand-50/70 shadow-soft'
-          : 'border-ink-200 bg-white hover:border-ink-300',
-      )}
-    >
-      <span
-        className={cn(
-          'w-10 h-10 rounded-xl flex items-center justify-center transition-colors',
-          active
-            ? 'bg-brand-600 text-white'
-            : 'bg-ink-50 text-ink-600 group-hover:bg-ink-100',
-        )}
-      >
-        {icon}
-      </span>
-      <span className="flex-1 min-w-0">
-        <span className="block font-semibold text-ink-950 text-[14.5px] leading-tight">
-          {title}
-        </span>
-        <span className="block text-[12.5px] text-ink-600 mt-0.5">{subtitle}</span>
-      </span>
-      <span
-        className={cn(
-          'w-5 h-5 rounded-full border-2 transition-all duration-300 flex items-center justify-center shrink-0',
-          active ? 'border-brand-600 bg-brand-600' : 'border-ink-300',
-        )}
-      >
-        {active && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
-      </span>
-    </button>
   )
 }
 
@@ -996,7 +959,7 @@ function Checkbox({
             animate={{ opacity: 1, height: 'auto', y: 0 }}
             exit={{ opacity: 0, height: 0, y: -4 }}
             transition={{ duration: 0.3 }}
-            className="mt-2 text-[12.5px] text-accent-700 font-medium pl-8"
+            className="mt-2 text-[12.5px] text-brand-700 font-medium pl-8"
           >
             {error}
           </motion.p>
@@ -1083,7 +1046,7 @@ function CouponCard({
             }
             className={cn(
               'input flex-1 !py-3 uppercase tracking-wider',
-              coupon.invalid && '!border-accent-400 !ring-2 !ring-accent-200',
+              coupon.invalid && '!border-brand-400 !ring-2 !ring-brand-200',
             )}
           />
           <button
@@ -1097,7 +1060,7 @@ function CouponCard({
         </div>
       )}
       {coupon.invalid && !coupon.applied && (
-        <p className="mt-2 text-[12.5px] text-accent-700 font-medium">
+        <p className="mt-2 text-[12.5px] text-brand-700 font-medium">
           That code isn't valid. Try again, or skip — the offer is already a
           great deal.
         </p>

@@ -9,7 +9,7 @@ import { fadeUp, stagger, VIEWPORT_ONCE } from '@/lib/motion'
 const faqs = [
   {
     q: 'Is The Postpartum Restore™ for me if my doctor says everything is normal?',
-    a: "Yes — in fact, that's exactly who this assessment was created for. Many women are told their blood work, checkups and recovery look 'normal' while still living with exhaustion, brain fog, hair loss, stubborn weight gain and the feeling that something isn't quite right. The Postpartum Restore helps you identify the recovery gaps that may not have been explored yet.",
+    a: "Yes. In fact, that's exactly who this assessment was created for. Many women are told their blood work, checkups and recovery look \"normal\" while still experiencing exhaustion, brain fog, hair loss, stubborn weight gain and the feeling that something isn't quite right. The Postpartum Restore helps you identify the recovery gaps that may not have been explored yet.",
   },
   {
     q: 'How postpartum should I be for this to apply to me?',
@@ -17,11 +17,11 @@ const faqs = [
   },
   {
     q: "What if I don't have recent blood work?",
-    a: "That's completely fine. You can still complete the assessment and all four audits. If you do have a recent blood report, you'll be able to get even more value from certain sections — but it's not required to benefit from the programme.",
+    a: "That's completely fine. You can still complete the assessment and all four audits. If you do have a recent blood report, you'll be able to get even more value from certain sections, but it is not required to benefit from the programme.",
   },
   {
     q: 'How quickly will I get access?',
-    a: "Immediately. As soon as you enrol, you'll receive instant access to The Postpartum Restore, all four Clinical Audits, the Private Postpartum Mothers Community, Monthly Group Coaching Sessions, and instructions for booking your 30-Minute Postpartum Assessment Call with Suvidhi.",
+    a: "Immediately. As soon as you enrol, you'll receive instant access to The Postpartum Restore, all 4 Clinical Audits, the Private Postpartum Mothers Community, Monthly Group Coaching Sessions, and instructions for booking your 30-Minute Postpartum Assessment Call with Suvidhi.",
   },
   {
     q: 'Do I need any medical knowledge to understand the programme?',
@@ -30,14 +30,6 @@ const faqs = [
   {
     q: 'Will I receive personalised guidance?',
     a: "Yes. In addition to the assessment, audits and monthly coaching sessions, you'll also receive a 30-Minute Postpartum Assessment Call with Suvidhi, where you'll get personalised guidance based on your situation and recovery patterns.",
-  },
-  {
-    q: 'Is this just another diet plan?',
-    a: "No — and that's the point. The Postpartum Restore is a clinical assessment, not a diet template. We help you understand the biology of your specific recovery so you can stop chasing protocols and start making informed decisions that fit your real life, your real meals and your real day.",
-  },
-  {
-    q: 'Will I be locked into a long-term commitment?',
-    a: "No. The Postpartum Restore is a one-time enrollment with lifetime access to the audits and the community. There is no auto-renewal, no hidden subscription, and no obligation to ever buy anything else. If a longer programme makes sense for you later, you'll know — but it's never assumed.",
   },
 ]
 
@@ -49,13 +41,7 @@ export function FAQ() {
       <Container size="narrow">
         <SectionHeading
           eyebrow="Before you book · Quick answers"
-          title={
-            <>
-              Honest answers to{' '}
-              <span className="grad-text">the questions mothers actually ask</span>
-            </>
-          }
-          subtitle="If something isn't here, write to us — there are no off-limits questions when it comes to your recovery."
+          title="Frequently Asked Questions"
         />
 
         <motion.div

@@ -17,10 +17,10 @@ function MarqueeGroup({ ariaHidden = false }: { ariaHidden?: boolean }) {
         return (
           <div
             key={i}
-            className="flex items-center gap-2.5 text-[12.5px] font-medium tracking-tight"
+            className="font-marquee flex items-center gap-2.5 text-[12.5px] font-medium tracking-tight"
           >
             <Icon className="w-3.5 h-3.5 text-brand-300" aria-hidden />
-            <span>{it.text}</span>
+            <span className="font-marquee">{it.text}</span>
             <span className="w-1 h-1 rounded-full bg-cream/30 ml-6" aria-hidden />
           </div>
         )

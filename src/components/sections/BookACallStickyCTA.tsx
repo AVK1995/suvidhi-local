@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { ArrowDown, CalendarCheck, Sparkles } from 'lucide-react'
-import { useMagnetic, useScrolledPastSticky } from '@/lib/hooks'
+import { useMagnetic, useNearPageBottom, useScrolledPastSticky } from '@/lib/hooks'
 
 interface BookACallStickyCTAProps {
   /** ID of the target section to scroll to. Defaults to the calendar block. */
@@ -10,7 +10,11 @@ interface BookACallStickyCTAProps {
 export function BookACallStickyCTA({
   targetId = 'calendar',
 }: BookACallStickyCTAProps) {
-  const show = useScrolledPastSticky(260)
+  // Appear after a short scroll, but tuck away as the footer comes into view so
+  // the bar never overlaps it.
+  const past = useScrolledPastSticky(260)
+  const nearBottom = useNearPageBottom(200)
+  const show = past && !nearBottom
   const btnRef = useMagnetic<HTMLButtonElement>(0.1)
 
   const handleClick = () => {
@@ -52,9 +56,9 @@ export function BookACallStickyCTA({
                     <CalendarCheck className="w-5 h-5" />
                     <span
                       aria-hidden
-                      className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-accent-400 border-2 border-white"
+                      className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-brand-500 border-2 border-white"
                     >
-                      <span className="absolute inset-0 rounded-full bg-accent-400 animate-ping opacity-75" />
+                      <span className="absolute inset-0 rounded-full bg-brand-500 animate-ping opacity-75" />
                     </span>
                   </div>
                   <div className="min-w-0 flex-1">
