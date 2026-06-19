@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import { ArrowLeft, FileText } from 'lucide-react'
 import { Container } from '@/components/ui/Container'
 import { fadeUp } from '@/lib/motion'
@@ -31,7 +31,7 @@ export function PolicyHeader({
       <Container className="relative pt-8 pb-10 sm:pt-12 sm:pb-12">
         {/* Back link — kept left-aligned for natural navigation affordance. */}
         <Link
-          to="/"
+          href="/"
           className="inline-flex items-center gap-1.5 text-sm font-medium text-ink-600 hover:text-brand-700 transition-colors group mb-6"
         >
           <ArrowLeft className="w-4 h-4 transition-transform duration-300 group-hover:-translate-x-0.5" />

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { ArrowRight, Calendar } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { OFFER } from '@/lib/config'
 import { utmQueryString } from '@/lib/utm'
@@ -25,7 +25,7 @@ export function PrimaryCTA({
   showPrice = true,
   to = '/checkout',
 }: PrimaryCTAProps) {
-  const navigate = useNavigate()
+  const router = useRouter()
   const reduce = useReducedMotion()
   const [hovered, setHovered] = useState(false)
 
@@ -38,7 +38,7 @@ export function PrimaryCTA({
 
   return (
     <motion.button
-      onClick={() => navigate(to + utmQueryString())}
+      onClick={() => router.push(to + utmQueryString())}
       onHoverStart={() => setHovered(true)}
       onHoverEnd={() => setHovered(false)}
       animate={reduce ? undefined : { scale: [1, 1.025, 1] }}

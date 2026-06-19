@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import { Clock, ShieldCheck } from 'lucide-react'
 import { Container } from '@/components/ui/Container'
 import { PrimaryCTA } from '@/components/ui/PrimaryCTA'
@@ -46,7 +46,7 @@ export function Footer({ hideCTA = false }: FooterProps) {
                     </span>
                   )}
                   <Link
-                    to={p.to}
+                    href={p.to}
                     className="font-semibold text-brand-600 hover:text-brand-700 underline-offset-2 hover:underline transition-colors"
                   >
                     {p.label}

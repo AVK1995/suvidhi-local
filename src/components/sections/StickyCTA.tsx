@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { ArrowRight, Calendar, ShieldCheck, Sparkles } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { useMagnetic, useNearPageBottom, usePastHero } from '@/lib/hooks'
 import { OFFER } from '@/lib/config'
 import { utmQueryString } from '@/lib/utm'
@@ -11,7 +11,7 @@ export function StickyCTA() {
   // Show after hero, hide once the footer CTA enters the viewport so the two
   // never collide visually.
   const show = pastHero && !nearBottom
-  const navigate = useNavigate()
+  const router = useRouter()
   const btnRef = useMagnetic<HTMLButtonElement>(0.12)
 
   return (
@@ -75,7 +75,7 @@ export function StickyCTA() {
                 {/* Right — CTA */}
                 <motion.button
                   ref={btnRef}
-                  onClick={() => navigate('/checkout' + utmQueryString())}
+                  onClick={() => router.push('/checkout' + utmQueryString())}
                   whileTap={{ scale: 0.97 }}
                   className="magnet group relative inline-flex items-center justify-center gap-1.5
                              rounded-xl px-4 sm:px-5 py-2.5 sm:py-3

@@ -6,12 +6,14 @@ dist/
 dist-ssr/
 *.local
 
-# Vite + TS caches
-.vite/
+# Next.js
+.next/
+out/
+next-env.d.ts
+.vercel
+
+# TS caches
 *.tsbuildinfo
-vite.config.d.ts
-vite.config.js
-vite.config.js.map
 
 # Environment — secrets, NEVER commit
 .env

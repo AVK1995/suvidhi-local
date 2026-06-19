@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { ArrowRight } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { utmQueryString } from '@/lib/utm'
 
@@ -19,12 +19,12 @@ export function GradientCTA({
   to = '/checkout',
   className,
 }: GradientCTAProps) {
-  const navigate = useNavigate()
+  const router = useRouter()
   const reduce = useReducedMotion()
   const [hovered, setHovered] = useState(false)
   return (
     <motion.button
-      onClick={() => navigate(to + utmQueryString())}
+      onClick={() => router.push(to + utmQueryString())}
       onHoverStart={() => setHovered(true)}
       onHoverEnd={() => setHovered(false)}
       animate={reduce ? undefined : { scale: [1, 1.025, 1] }}

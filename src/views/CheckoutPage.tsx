@@ -1,6 +1,8 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useNavigate, Link } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { setFunnelState } from '@/lib/funnelState'
 import PhoneInput from 'react-phone-number-input'
 import 'react-phone-number-input/style.css'
 import {
@@ -77,7 +79,7 @@ const hba1cRanges = [
 ]
 
 export default function CheckoutPage() {
-  const navigate = useNavigate()
+  const router = useRouter()
   const [form, setForm] = useState<FormState>(initial)
   const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({})
   const [coupon, setCoupon] = useState<CouponState>({
@@ -192,18 +194,17 @@ export default function CheckoutPage() {
       hba1c: form.hba1c,
       isTest: OFFER.price <= 1,
     })
-    navigate('/book-a-call' + utmQueryString(), {
-      state: {
-        name: fullName,
-        email: form.email,
-        phone: form.phone,
-        city: form.city,
-        orderId,
-        paymentId,
-        amountPaid: payable,
-        coupon: coupon.applied ? coupon.code : undefined,
-      },
+    setFunnelState({
+      name: fullName,
+      email: form.email,
+      phone: form.phone,
+      city: form.city,
+      orderId,
+      paymentId,
+      amountPaid: payable,
+      coupon: coupon.applied ? coupon.code : undefined,
     })
+    router.push('/book-a-call' + utmQueryString())
   }
 
   const onSubmit = async (e: FormEvent) => {
@@ -293,7 +294,7 @@ export default function CheckoutPage() {
           {/* Breadcrumb */}
           <div className="mb-6 flex items-center justify-between flex-wrap gap-3">
             <Link
-              to="/"
+              href="/"
               className="inline-flex items-center gap-1.5 text-sm font-medium text-ink-600 hover:text-brand-700 transition-colors group"
             >
               <ArrowLeft className="w-4 h-4 transition-transform duration-300 group-hover:-translate-x-0.5" />
@@ -448,21 +449,21 @@ export default function CheckoutPage() {
                   seriously. I understand this is educational, not medical advice. I
                   agree to the{' '}
                   <Link
-                    to="/terms-and-conditions"
+                    href="/terms-and-conditions"
                     className="text-brand-700 underline-offset-2 hover:underline"
                   >
                     terms
                   </Link>
                   ,{' '}
                   <Link
-                    to="/privacy-policy"
+                    href="/privacy-policy"
                     className="text-brand-700 underline-offset-2 hover:underline"
                   >
                     privacy
                   </Link>{' '}
                   &{' '}
                   <Link
-                    to="/refund-policy"
+                    href="/refund-policy"
                     className="text-brand-700 underline-offset-2 hover:underline"
                   >
                     refund policy

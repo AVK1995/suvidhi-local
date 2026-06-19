@@ -65,7 +65,7 @@ export async function startCheckout(input: CheckoutInput): Promise<void> {
   if (!RAZORPAY.keyId || RAZORPAY.keyId.includes('REPLACE_ME')) {
     input.onFailure?.({
       message:
-        'VITE_RAZORPAY_KEY_ID is not configured in .env. Add it and restart `npm run dev`.',
+        'NEXT_PUBLIC_RAZORPAY_KEY_ID is not configured in .env. Add it and restart `npm run dev`.',
       code: 'KEY_NOT_CONFIGURED',
     })
     return
@@ -208,7 +208,7 @@ async function createOrder(input: {
         message,
         code: code ?? (isAuthFail ? 'AUTHENTICATION_FAILED' : 'ORDER_CREATE_FAILED'),
         reason: isAuthFail
-          ? 'The (key_id, key_secret) pair Razorpay received does not authenticate. Regenerate the live key in Razorpay Dashboard → Settings → API Keys, paste the new VITE_RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET into .env, and restart `npm run dev`.'
+          ? 'The (key_id, key_secret) pair Razorpay received does not authenticate. Regenerate the live key in Razorpay Dashboard → Settings → API Keys, paste the new NEXT_PUBLIC_RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET into .env, and restart `npm run dev`.'
           : typeof data.reason === 'string'
           ? (data.reason as string)
           : undefined,

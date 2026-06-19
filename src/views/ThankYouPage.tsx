@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Link, useLocation } from 'react-router-dom'
+import Link from 'next/link'
+import { getFunnelState } from '@/lib/funnelState'
 import {
   ArrowRight,
   BookOpen,
@@ -90,8 +91,8 @@ const noteBullets = [
 ]
 
 export default function ThankYouPage() {
-  const { state } = useLocation() as { state: ThankYouState | null }
-  const s = state ?? {}
+  // Read once from the funnel carrier (set by the book-a-call page before push).
+  const [s] = useState<ThankYouState>(() => getFunnelState<ThankYouState>() ?? {})
   // Tracks hover on the "Enter the community" pill so we can sweep a shine
   // across it on enter and instantly snap it back on leave (no reverse sweep).
   const [accessHovered, setAccessHovered] = useState(false)
@@ -609,7 +610,7 @@ export default function ThankYouPage() {
                   </p>
                 </div>
                 <Link
-                  to="/"
+                  href="/"
                   className="group inline-flex items-center gap-1.5 self-stretch sm:self-auto justify-center px-5 py-2.5 rounded-full bg-white border border-ink-200 text-ink-900 font-semibold text-sm hover:border-brand-500 hover:text-brand-700 transition-all"
                 >
                   Back home

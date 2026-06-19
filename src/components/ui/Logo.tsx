@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import { cn } from '@/lib/utils'
 
 interface LogoProps {
@@ -12,7 +12,7 @@ export function Logo({ className, variant = 'light' }: LogoProps) {
 
   return (
     <Link
-      to="/"
+      href="/"
       aria-label="Suvidhi — Home"
       className={cn('inline-flex items-center gap-2.5 group', fg, className)}
     >

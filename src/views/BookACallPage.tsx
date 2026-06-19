@@ -1,6 +1,8 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
-import { useLocation, useNavigate, Link } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { getFunnelState, setFunnelState } from '@/lib/funnelState'
 import {
   ArrowDown,
   ArrowLeft,
@@ -99,9 +101,9 @@ function buildCalendlyUrl(state: CheckoutState): string {
 }
 
 export default function BookACallPage() {
-  const { state } = useLocation() as { state: CheckoutState | null }
-  const navigate = useNavigate()
-  const checkoutState: CheckoutState = state ?? {}
+  const router = useRouter()
+  // Read once from the funnel carrier (set by the checkout page before push).
+  const [checkoutState] = useState<CheckoutState>(() => getFunnelState<CheckoutState>() ?? {})
 
   const calendlyUrl = useMemo(() => buildCalendlyUrl(checkoutState), [checkoutState])
 
@@ -127,12 +129,13 @@ export default function BookACallPage() {
           isTest: OFFER.price <= 1,
           meta: { calendly: (data as { payload?: unknown }).payload },
         })
-        navigate('/thank-you' + utmQueryString(), { state: checkoutState })
+        setFunnelState(checkoutState)
+        router.push('/thank-you' + utmQueryString())
       }
     }
     window.addEventListener('message', onMessage)
     return () => window.removeEventListener('message', onMessage)
-  }, [navigate, checkoutState])
+  }, [router, checkoutState])
 
   return (
     <div className="relative min-h-screen flex flex-col">
@@ -155,7 +158,7 @@ export default function BookACallPage() {
             {/* Breadcrumb */}
             <div className="mb-6 flex items-center justify-between flex-wrap gap-3">
               <Link
-                to="/"
+                href="/"
                 className="inline-flex items-center gap-1.5 text-sm font-medium text-ink-600 hover:text-brand-700 transition-colors group"
               >
                 <ArrowLeft className="w-4 h-4 transition-transform duration-300 group-hover:-translate-x-0.5" />
@@ -620,7 +623,7 @@ function CalendlyPlaceholder() {
       <p className="mt-2 text-ink-600 max-w-sm mx-auto text-[14.5px] leading-relaxed">
         Add your Calendly event URL to{' '}
         <code className="px-1.5 py-0.5 rounded bg-cream-dark border border-ink-100 text-[12.5px] text-ink-800">
-          VITE_CALENDLY_URL
+          NEXT_PUBLIC_CALENDLY_URL
         </code>{' '}
         in the <code>.env</code> file and reload to embed the live booking
         widget here.
