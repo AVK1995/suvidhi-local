@@ -314,7 +314,7 @@ export default function ThankYouPage() {
                 />
 
                 {/* Label content — sits above all visual layers */}
-                <Sparkles className="relative w-4 h-4 text-accent-300 shrink-0" />
+                <Sparkles className="relative w-4 h-4 text-brand-200 shrink-0" />
                 <span className="relative">Join the community</span>
                 <ArrowRight
                   className="relative w-[18px] h-[18px] transition-transform duration-300 ease-out group-hover:translate-x-1 shrink-0"
@@ -488,9 +488,9 @@ export default function ThankYouPage() {
               viewport={VIEWPORT_ONCE}
               className="max-w-4xl mx-auto"
             >
-              <div className="relative rounded-3xl overflow-hidden border border-accent-200/60 bg-accent-50/60 p-6 sm:p-7">
+              <div className="relative rounded-3xl overflow-hidden border border-brand-200/60 surface-tint p-6 sm:p-7">
                 <div className="flex flex-col sm:flex-row items-start gap-5">
-                  <span className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-accent-100 text-accent-700 border border-accent-200/60 shrink-0">
+                  <span className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-brand-100 text-brand-700 border border-brand-200/60 shrink-0">
                     <Mail className="w-5 h-5" strokeWidth={1.75} />
                   </span>
                   <div className="flex-1 min-w-0">

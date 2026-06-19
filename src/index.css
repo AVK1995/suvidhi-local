@@ -171,6 +171,21 @@
            transition-all duration-500 ease-out-expo;
   }
 
+  /* Marquee strip uses a cleaner grotesque (Helvetica Neue) for a more
+     professional feel than the body Inter. Class beats the global element rule. */
+  .font-marquee {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    letter-spacing: 0.01em;
+  }
+
+  /* Hand-written script accent (Pacifico). Defined here so it always ships
+     regardless of Tailwind config regeneration, and the class selector beats
+     the global `p { font-family: Inter }` base rule. */
+  .font-script {
+    font-family: 'Pacifico', cursive;
+    font-weight: 400;
+  }
+
   /* Decorative gradient text */
   .grad-text {
     background: linear-gradient(95deg, #5d2129 0%, #963543 40%, #CB4A5D 100%);

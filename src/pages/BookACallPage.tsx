@@ -286,7 +286,7 @@ export default function BookACallPage() {
                     }}
                     className="inline-flex shrink-0"
                   >
-                    <Gift className="w-4 h-4 sm:w-5 sm:h-5 text-accent-300" />
+                    <Gift className="w-4 h-4 sm:w-5 sm:h-5 text-brand-200" />
                   </motion.span>
                   <span className="text-[11.5px] sm:text-[13px] font-semibold uppercase tracking-[0.2em] sm:tracking-[0.22em] text-center text-balance">
                     Claim your BONUS · 1:1 Call with Suvidhi
@@ -300,7 +300,7 @@ export default function BookACallPage() {
                     }}
                     className="inline-flex shrink-0"
                   >
-                    <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-accent-300" />
+                    <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-brand-200" />
                   </motion.span>
                 </div>
               </motion.div>
@@ -509,8 +509,7 @@ export default function BookACallPage() {
         </section>
 
         {/* ───────────────── PERSONAL NOTE FROM SUVIDHI ─────────────────
-            Minimal centered block — no photo, no long paragraphs. Keeps the
-            Calendly widget within easy reach below. */}
+            Highlighted, hand-written (Pacifico) note in a tinted card. */}
         <section className="relative py-10 sm:py-12">
           <Container size="narrow">
             <motion.div
@@ -518,21 +517,36 @@ export default function BookACallPage() {
               initial="hidden"
               whileInView="show"
               viewport={VIEWPORT_ONCE}
-              className="relative mx-auto max-w-2xl text-center"
+              className="relative mx-auto max-w-2xl"
             >
-              <div className="inline-flex eyebrow">
-                <MessageSquareHeart className="w-3 h-3" />
-                A personal note from Suvidhi
-              </div>
-              <p className="mt-4 sm:mt-5 font-display text-[1.25rem] sm:text-[1.55rem] lg:text-[1.75rem] leading-[1.35] text-ink-900 text-balance italic">
-                I personally conduct every Postpartum Assessment Call myself —{' '}
-                <span className="not-italic font-semibold text-ink-950">
-                  reserve your spot now.
-                </span>
-              </p>
+              <div className="relative rounded-[28px] surface-tint border border-brand-200/60 shadow-soft overflow-hidden p-7 sm:p-9 lg:p-10 text-center">
+                <div
+                  aria-hidden
+                  className="absolute -top-16 -right-16 w-56 h-56 rounded-full blur-3xl opacity-50 pointer-events-none"
+                  style={{
+                    background:
+                      'radial-gradient(closest-side, rgba(236,158,169,.6), transparent 70%)',
+                  }}
+                />
+                <div className="relative inline-flex eyebrow">
+                  <MessageSquareHeart className="w-3 h-3" />
+                  A personal note from Suvidhi
+                </div>
 
-              {/* Scroll-to-calendar button — looping shine */}
-              <ScrollToCalendarButton className="mt-6 sm:mt-7" />
+                <div className="relative mt-6 space-y-4 text-brand-800 text-[1.05rem] sm:text-[1.2rem] leading-relaxed text-pretty">
+                  <p className="font-script" style={{ fontFamily: "'Pacifico', cursive" }}>
+                    I personally conduct every Postpartum Assessment Call myself.
+                  </p>
+                  <p className="font-script" style={{ fontFamily: "'Pacifico', cursive" }}>
+                    Because my coaching schedule is limited, I can only accommodate a
+                    limited number of calls each week.
+                  </p>
+                  <p className="font-script" style={{ fontFamily: "'Pacifico', cursive" }}>
+                    If you'd like to take advantage of this bonus session included with
+                    your purchase, I encourage you to reserve your spot now.
+                  </p>
+                </div>
+              </div>
             </motion.div>
           </Container>
         </section>

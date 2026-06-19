@@ -1,39 +1,40 @@
 import { useEffect } from 'react'
-import { TopMarquee } from '@/components/sections/TopMarquee'
 import { Hero } from '@/components/sections/Hero'
-import { Outcomes } from '@/components/sections/Outcomes'
-import { ClarityCall } from '@/components/sections/ClarityCall'
-import { Guarantee } from '@/components/sections/Guarantee'
+import { SoundLikeYou } from '@/components/sections/SoundLikeYou'
+import { RecoveryCycle } from '@/components/sections/RecoveryCycle'
+import { Modules } from '@/components/sections/Modules'
 import { Testimonials } from '@/components/sections/Testimonials'
-import { EarlyResults } from '@/components/sections/EarlyResults'
+import { ClarityCall } from '@/components/sections/ClarityCall'
+import { ValueStack } from '@/components/sections/ValueStack'
+import { Guarantee } from '@/components/sections/Guarantee'
 import { Clinician } from '@/components/sections/Clinician'
-import { TwoChoices } from '@/components/sections/TwoChoices'
-import { Qualification } from '@/components/sections/Qualification'
 import { FAQ } from '@/components/sections/FAQ'
-import { FinalCTA } from '@/components/sections/FinalCTA'
 import { Footer } from '@/components/sections/Footer'
 import { StickyCTA } from '@/components/sections/StickyCTA'
 
 export default function LandingPage() {
   useEffect(() => {
-    document.title = 'Suvidhi — Control Blood Sugar in 90 Days, Clinically'
+    document.title = 'Suvidhi — The Postpartum Restore™ · Find Out Why You Haven\'t Recovered'
   }, [])
 
+  // Layout + section order mirror the TrainerGoesOnline funnel page (per the
+  // reference screenshots): hero w/ product mockup → launch-offer box → "does
+  // this sound like you" → the cycle + consequences → 5 modules (stacking
+  // cards) → testimonials slider → what's included → value-stack recap →
+  // guarantee → clinician → FAQ. Pink brand theme + our type hierarchy.
   return (
     <div className="relative">
-      <TopMarquee />
       <main className="relative">
         <Hero />
-        <Outcomes />
-        <ClarityCall />
-        <Guarantee />
+        <SoundLikeYou />
+        <RecoveryCycle />
+        <Modules />
         <Testimonials />
-        <EarlyResults />
+        <ClarityCall />
+        <ValueStack />
+        <Guarantee />
         <Clinician />
-        <TwoChoices />
-        <Qualification />
         <FAQ />
-        <FinalCTA />
       </main>
       <Footer />
       <StickyCTA />
