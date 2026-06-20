@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next'
+import Script from 'next/script'
 import '@/index.css'
 import { Analytics } from './Analytics'
 
@@ -31,6 +32,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://checkout.razorpay.com" />
         <link rel="preconnect" href="https://connect.facebook.net" />
         <link rel="preconnect" href="https://calendly.com" />
+        <link rel="preconnect" href="https://www.googletagmanager.com" />
+        <link rel="preconnect" href="https://www.clarity.ms" />
         {/* Fonts: Pacifico (script accent) + Poppins (headings) + Inter (body).
             display=swap renders fallback text immediately. */}
         <link
@@ -47,6 +50,27 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </noscript>
         <Analytics />
         {children}
+
+        {/* Microsoft Clarity — session/heatmap analytics (project vi86v72ho2) */}
+        <Script id="ms-clarity" strategy="afterInteractive">
+          {`(function(c,l,a,r,i,t,y){
+              c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+              t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+              y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+          })(window, document, "clarity", "script", "vi86v72ho2");`}
+        </Script>
+
+        {/* Google Analytics 4 — gtag.js (G-Q1RHVTJQJ7) */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-Q1RHVTJQJ7"
+          strategy="afterInteractive"
+        />
+        <Script id="ga4-gtag" strategy="afterInteractive">
+          {`window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-Q1RHVTJQJ7');`}
+        </Script>
       </body>
     </html>
   )
