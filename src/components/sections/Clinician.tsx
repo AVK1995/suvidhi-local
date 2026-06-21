@@ -3,7 +3,7 @@ import { Award, Check, GraduationCap, HeartHandshake, Microscope, Sprout } from 
 import { Container } from '@/components/ui/Container'
 import { SectionHeading } from '@/components/ui/SectionHeading'
 import { PrimaryCTA } from '@/components/ui/PrimaryCTA'
-import { Placeholder } from '@/components/ui/Placeholder'
+import Image from 'next/image'
 import { fadeUp, slideInLeft, slideInRight, stagger, VIEWPORT_ONCE } from '@/lib/motion'
 
 const pills = [
@@ -44,12 +44,15 @@ export function Clinician() {
         >
           {/* Photo placeholder — landscape */}
           <motion.div variants={slideInLeft} className="relative">
-            <Placeholder
-              ratio="aspect-[4/3]"
-              label="Suvidhi · clinician photo"
-              rounded="rounded-[24px]"
-              className="shadow-elev"
-            />
+            <div className="relative aspect-[4/3] rounded-[24px] overflow-hidden shadow-elev bg-cream-dark">
+              <Image
+                src="/images/suvidhi/dsc00467.jpg"
+                alt="Suvidhi — UK-trained Clinical Nutritionist"
+                fill
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                className="object-cover"
+              />
+            </div>
             {/* Floating credential chips */}
             <div className="mt-4 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-center">
               {pills.map((p) => {

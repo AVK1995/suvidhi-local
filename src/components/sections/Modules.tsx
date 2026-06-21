@@ -1,15 +1,16 @@
+import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { Check, Gift } from 'lucide-react'
 import { Container } from '@/components/ui/Container'
 import { SectionHeading } from '@/components/ui/SectionHeading'
 import { PrimaryCTA } from '@/components/ui/PrimaryCTA'
-import { Placeholder } from '@/components/ui/Placeholder'
 import { fadeUp, VIEWPORT_ONCE } from '@/lib/motion'
 
 interface Module {
   title: string
   points: string[]
   deliverable: string
+  image: string
 }
 
 // Exact copy from the funnel PDF (right-hand column).
@@ -22,6 +23,7 @@ const modules: Module[] = [
       'Complete the Postpartum Depletion Audit and use your latest blood report to identify the first hidden factor that may be holding your recovery back.',
     ],
     deliverable: 'Postpartum Depletion Audit',
+    image: '/Module_Visualization_Images/Module_Mockup1.png',
   },
   {
     title: 'Why Your Body Is Storing Instead Of Rebuilding',
@@ -32,6 +34,7 @@ const modules: Module[] = [
       'Get The Amino Acid Primer Protocol, including a simple meal framework, food guide and 7-day tracker to help you identify what works best for your body.',
     ],
     deliverable: 'The Amino Acid Primer Protocol',
+    image: '/Module_Visualization_Images/Module_Mockup2.1.png',
   },
   {
     title: 'The Missing Nutrients Your Recovery Depends On',
@@ -42,6 +45,7 @@ const modules: Module[] = [
       'Complete the Clinical Supplement Audit and quickly identify which supplements may be helping your recovery and which ones may be falling short.',
     ],
     deliverable: 'Clinical Supplement Audit',
+    image: '/Module_Visualization_Images/Module_Mockup3.1.png',
   },
   {
     title: "Why You Still Don't Feel Like Yourself",
@@ -52,6 +56,7 @@ const modules: Module[] = [
       'Complete the Low-Toxin Home Audit and 14-Day Circadian Reset Tracker to help support better energy, mood and recovery.',
     ],
     deliverable: 'Low-Toxin Home Audit + 14-Day Circadian Reset Tracker',
+    image: '/Module_Visualization_Images/Module_Mockup4.png',
   },
   {
     title: 'The Strategic Clarity Call',
@@ -61,6 +66,7 @@ const modules: Module[] = [
       'Complete The High-Performance Readiness Scorecard: a 12-question self-qualifier that takes 3 minutes and tells you honestly whether booking a Strategic Clarity Call is the right next step for you right now.',
     ],
     deliverable: 'The High-Performance Readiness Scorecard',
+    image: '/Module_Visualization_Images/Module_Mockup5.1.png',
   },
 ]
 
@@ -130,6 +136,18 @@ export function Modules() {
                 {/* Body — revealed only while this card is the top of the stack */}
                 <div className="p-5 sm:p-8 grid lg:grid-cols-2 gap-6 lg:gap-8 items-center">
                   <div className="min-w-0">
+                    {/* Mobile/tablet: visual sits at the top of the body, right
+                        under the module title. Native 16:9 so nothing is cropped. */}
+                    <div className="relative lg:hidden mb-5 w-full aspect-video rounded-[18px] overflow-hidden border border-ink-100 bg-cream-dark">
+                      <Image
+                        src={m.image}
+                        alt={`Module ${i + 1} — ${m.title}`}
+                        fill
+                        sizes="(max-width: 1024px) 100vw, 50vw"
+                        className="object-cover"
+                      />
+                    </div>
+
                     <ul className="space-y-2.5">
                       {m.points.map((p) => (
                         <li key={p} className="flex items-start gap-3">
@@ -148,12 +166,16 @@ export function Modules() {
                     </div>
                   </div>
 
-                  <Placeholder
-                    ratio="aspect-video"
-                    label={`Module ${i + 1} visual`}
-                    rounded="rounded-[18px]"
-                    className="hidden lg:block"
-                  />
+                  {/* Desktop: visual in the right column */}
+                  <div className="relative hidden lg:block w-full aspect-video rounded-[18px] overflow-hidden border border-ink-100 bg-cream-dark">
+                    <Image
+                      src={m.image}
+                      alt={`Module ${i + 1} — ${m.title}`}
+                      fill
+                      sizes="(max-width: 1024px) 100vw, 50vw"
+                      className="object-cover"
+                    />
+                  </div>
                 </div>
               </article>
             </div>

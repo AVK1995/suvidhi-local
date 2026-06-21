@@ -4,7 +4,7 @@ import { Container } from '@/components/ui/Container'
 import { SectionHeading } from '@/components/ui/SectionHeading'
 import { PrimaryCTA } from '@/components/ui/PrimaryCTA'
 import { Countdown } from '@/components/ui/Countdown'
-import { Placeholder } from '@/components/ui/Placeholder'
+import Image from 'next/image'
 import { fadeUp, stagger, VIEWPORT_ONCE } from '@/lib/motion'
 import { OFFER, VALUE_STACK, VALUE_STACK_TOTAL } from '@/lib/config'
 import { formatINR } from '@/lib/utils'
@@ -32,13 +32,16 @@ export function ValueStack() {
           className="mt-12 sm:mt-14 relative rounded-[28px] overflow-hidden border border-ink-100 shadow-elev bg-white"
         >
           <div className="p-6 sm:p-8 lg:p-10">
-            {/* Everything-you-get collage placeholder */}
-            <Placeholder
-              ratio="aspect-[16/7]"
-              label="Everything you get · product collage"
-              rounded="rounded-2xl"
-              className="mb-7"
-            />
+            {/* Everything-you-get product collage */}
+            <div className="relative mb-7 w-full aspect-[16/7] rounded-2xl overflow-hidden bg-cream-dark">
+              <Image
+                src="/Value_Stack_Collage/Value_Stack_Collage1.1.png"
+                alt="Everything you get — the assessment, 4 clinical audits and 3 bonuses"
+                fill
+                sizes="(max-width: 1024px) 100vw, 800px"
+                className="object-cover"
+              />
+            </div>
 
             {/* Itemised list */}
             <motion.ul

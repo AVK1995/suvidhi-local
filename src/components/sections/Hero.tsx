@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
 import { ShieldCheck, Sprout } from 'lucide-react'
 import { Container } from '@/components/ui/Container'
-import { Placeholder } from '@/components/ui/Placeholder'
+import Image from 'next/image'
 import { GradientCTA } from '@/components/ui/GradientCTA'
 import { fadeUp, scaleIn, slideInLeft, slideInRight, stagger } from '@/lib/motion'
 import { OFFER } from '@/lib/config'
@@ -127,12 +127,16 @@ export function Hero() {
             </div>
 
             <motion.div variants={scaleIn} className="relative mt-auto">
-              <Placeholder
-                ratio="aspect-[4/3]"
-                rounded="rounded-2xl"
-                label="Product collage placeholder"
-                className="!border-white/15 !bg-white/[0.04]"
-              />
+              <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden border border-white/15">
+                <Image
+                  src="/Hero-Section-Collage/Hero_Collage.png"
+                  alt="Suvidhi with The Postpartum Restore — the assessment, 4 clinical audits and 3 bonuses"
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  className="object-cover"
+                  priority
+                />
+              </div>
               <SpecialOfferBadge />
             </motion.div>
           </motion.div>
