@@ -3,6 +3,7 @@ import { Award, Check, GraduationCap, HeartHandshake, Microscope, Sprout } from 
 import { Container } from '@/components/ui/Container'
 import { SectionHeading } from '@/components/ui/SectionHeading'
 import { PrimaryCTA } from '@/components/ui/PrimaryCTA'
+import Image from 'next/image'
 import { fadeUp, slideInLeft, slideInRight, stagger, VIEWPORT_ONCE } from '@/lib/motion'
 
 // Small 3D gradient badge that holds an icon — used for the credential pills.
@@ -45,27 +46,19 @@ export function Clinician() {
           viewport={VIEWPORT_ONCE}
           className="mt-10 sm:mt-12 lg:mt-14 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center"
         >
-          {/* Real clinician photo */}
-          <motion.div variants={slideInLeft} className="relative min-w-0">
-            <div className="relative overflow-hidden rounded-[24px] shadow-elev ring-1 ring-brand-200/40 aspect-[1066/1120] glow-brand">
-              <img
-                src="/images/suvidhi/meet-suvidhi.webp"
-                alt="Suvidhi — UK-trained clinical nutritionist"
-                className="w-full h-full object-cover object-top"
-                loading="lazy"
-              />
-              <span
-                aria-hidden
-                className="pointer-events-none absolute inset-0"
-                style={{
-                  background:
-                    'linear-gradient(180deg, transparent 55%, rgba(57,18,24,0.18) 100%)',
-                }}
+          {/* Photo placeholder — landscape */}
+          <motion.div variants={slideInLeft} className="relative">
+            <div className="relative aspect-[4/3] rounded-[24px] overflow-hidden shadow-elev bg-cream-dark">
+              <Image
+                src="/images/suvidhi/dsc00467.jpg"
+                alt="Suvidhi — UK-trained Clinical Nutritionist"
+                fill
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                className="object-cover"
               />
             </div>
-            {/* Credential chips — single-column rows on mobile (no awkward
-                2-line wrap), wrapping pill row on larger screens. */}
-            <div className="mt-4 flex flex-col items-center gap-2 sm:flex-row sm:flex-wrap sm:justify-center">
+            {/* Floating credential chips */}
+            <div className="mt-4 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-center">
               {pills.map((p) => {
                 const Icon = p.icon
                 return (
