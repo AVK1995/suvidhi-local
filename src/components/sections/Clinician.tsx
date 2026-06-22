@@ -6,6 +6,10 @@ import { PrimaryCTA } from '@/components/ui/PrimaryCTA'
 import Image from 'next/image'
 import { fadeUp, slideInLeft, slideInRight, stagger, VIEWPORT_ONCE } from '@/lib/motion'
 
+// Small 3D gradient badge that holds an icon — used for the credential pills.
+const badge3d =
+  'grid place-items-center rounded-lg text-white shrink-0 shadow-[inset_0_1px_1px_rgba(255,255,255,0.45),0_3px_7px_-2px_rgba(203,74,93,0.5)] [background:linear-gradient(160deg,#de6976,#cb4a5d_60%,#963543)]'
+
 const pills = [
   { icon: GraduationCap, label: 'UK-trained Clinical Nutritionist' },
   { icon: Sprout, label: 'Postpartum recovery specialist' },
@@ -23,7 +27,7 @@ const points = [
 
 export function Clinician() {
   return (
-    <section className="relative section-pad">
+    <section className="relative section-pad overflow-x-clip">
       <Container>
         <SectionHeading
           eyebrow="The clinician behind The Postpartum Restore"
@@ -40,7 +44,7 @@ export function Clinician() {
           initial="hidden"
           whileInView="show"
           viewport={VIEWPORT_ONCE}
-          className="mt-10 sm:mt-12 lg:mt-14 grid lg:grid-cols-2 gap-8 lg:gap-12 items-center"
+          className="mt-10 sm:mt-12 lg:mt-14 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center"
         >
           {/* Photo placeholder — landscape */}
           <motion.div variants={slideInLeft} className="relative">
@@ -60,9 +64,11 @@ export function Clinician() {
                 return (
                   <span
                     key={p.label}
-                    className="flex items-center justify-center text-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-ink-100 shadow-soft text-[12.5px] font-semibold text-ink-800"
+                    className="flex items-center gap-2.5 px-3.5 py-2 rounded-2xl sm:rounded-full bg-white border border-brand-200/40 shadow-soft text-[13px] sm:text-[12.5px] font-semibold text-ink-800"
                   >
-                    <Icon className="w-3.5 h-3.5 text-brand-600" />
+                    <span className={`${badge3d} w-6 h-6 sm:w-5 sm:h-5`}>
+                      <Icon className="w-3.5 h-3.5 sm:w-3 sm:h-3" strokeWidth={2.2} />
+                    </span>
                     {p.label}
                   </span>
                 )
@@ -71,7 +77,7 @@ export function Clinician() {
           </motion.div>
 
           {/* Copy */}
-          <motion.div variants={slideInRight} className="text-center lg:text-left">
+          <motion.div variants={slideInRight} className="min-w-0 text-center lg:text-left">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full surface-tint border border-brand-200/60 text-brand-700 text-[12px] font-semibold">
               <Award className="w-3.5 h-3.5" />
               7+ years · 1000+ mothers supported
@@ -89,15 +95,15 @@ export function Clinician() {
             >
               {points.map((p) => (
                 <motion.li key={p} variants={fadeUp} className="flex items-start gap-3">
-                  <span className="mt-0.5 inline-flex w-6 h-6 rounded-full bg-brand-50 text-brand-700 border border-brand-200/60 items-center justify-center shrink-0">
-                    <Check className="w-3.5 h-3.5" strokeWidth={2.5} />
+                  <span className={`${badge3d} mt-0.5 w-6 h-6 !rounded-full`}>
+                    <Check className="w-3.5 h-3.5" strokeWidth={3} />
                   </span>
                   <span className="text-ink-700 text-[15px] leading-relaxed text-pretty">{p}</span>
                 </motion.li>
               ))}
             </motion.ul>
 
-            <div className="mt-7 flex flex-col items-center lg:items-start gap-2.5">
+            <div className="mt-7 flex flex-col items-center gap-2.5">
               <PrimaryCTA size="lg" label="Get Instant Access" />
               <p className="text-sm text-ink-600">
                 Includes a bonus 1:1 call with Suvidhi

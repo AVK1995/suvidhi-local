@@ -100,7 +100,7 @@ export function Modules() {
               className="sticky"
               style={{ top: `calc(${BASE_REM}rem + ${i * HEADER_REM}rem)` }}
             >
-              <article className="relative rounded-[24px] border border-ink-100 shadow-elev overflow-hidden bg-white">
+              <article className="relative rounded-[24px] border border-brand-200/30 shadow-elev overflow-hidden bg-white">
                 {/* Header peek — number + title (fixed height = stack offset, on
                     every viewport, so the stacking animation runs on mobile too). */}
                 <div className="relative flex items-center gap-4 px-5 sm:px-8 text-cream h-[5.25rem]">
@@ -133,8 +133,9 @@ export function Modules() {
                   </div>
                 </div>
 
-                {/* Body — revealed only while this card is the top of the stack */}
-                <div className="p-5 sm:p-8 grid lg:grid-cols-2 gap-6 lg:gap-8 items-center">
+                {/* Body — mobile shows the module visual above the pointers;
+                    desktop shows it in the right-hand column. */}
+                <div className="p-5 sm:p-8 grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-center">
                   <div className="min-w-0">
                     {/* Mobile/tablet: visual sits at the top of the body, right
                         under the module title. Native 16:9 so nothing is cropped. */}
@@ -151,8 +152,8 @@ export function Modules() {
                     <ul className="space-y-2.5">
                       {m.points.map((p) => (
                         <li key={p} className="flex items-start gap-3">
-                          <span className="mt-0.5 inline-flex w-6 h-6 rounded-full bg-brand-50 text-brand-700 border border-brand-200/60 items-center justify-center shrink-0">
-                            <Check className="w-3.5 h-3.5" strokeWidth={2.5} />
+                          <span className="mt-0.5 grid place-items-center w-6 h-6 rounded-full text-white shrink-0 shadow-[inset_0_1px_1px_rgba(255,255,255,0.4),0_4px_8px_-3px_rgba(203,74,93,0.55)] [background:linear-gradient(160deg,#de6976,#cb4a5d_60%,#963543)]">
+                            <Check className="w-3.5 h-3.5" strokeWidth={3} />
                           </span>
                           <span className="text-ink-700 text-[14.5px] sm:text-[15px] leading-relaxed text-pretty">
                             {p}
@@ -160,7 +161,7 @@ export function Modules() {
                         </li>
                       ))}
                     </ul>
-                    <div className="mt-5 inline-flex items-center gap-2 px-3 py-1.5 rounded-full surface-tint border border-brand-200/50 text-[12.5px] font-semibold text-brand-700">
+                    <div className="mt-5 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full surface-tint border border-brand-200/50 text-[12.5px] font-semibold text-brand-700">
                       <Gift className="w-3.5 h-3.5" />
                       Includes: {m.deliverable}
                     </div>
