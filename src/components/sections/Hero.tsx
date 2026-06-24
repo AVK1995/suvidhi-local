@@ -6,7 +6,13 @@ import { GradientCTA } from '@/components/ui/GradientCTA'
 import { fadeUp, scaleIn, slideInLeft, slideInRight, stagger } from '@/lib/motion'
 import { OFFER } from '@/lib/config'
 
-const PAIN_POINTS = ['Low Energy', 'Hair Fall', 'Brain Fog', 'Postpartum Belly']
+const PAIN_POINTS = [
+  'Low Energy',
+  'Hair Fall',
+  'Brain Fog',
+  'Postpartum Belly',
+  'Mood Swings',
+]
 
 const INCLUDED = [
   'The Postpartum Restore™ — 25-min guided assessment',
@@ -61,16 +67,16 @@ export function Hero() {
           {/* Pain-point pills */}
           <motion.div
             variants={fadeUp}
-            className="mt-3.5 flex flex-wrap justify-center gap-2"
+            className="mt-4 flex flex-wrap justify-center gap-2 sm:gap-2.5"
           >
             {PAIN_POINTS.map((p) => (
               <span
                 key={p}
-                className="inline-flex items-center gap-1.5 rounded-full bg-white border border-ink-100 shadow-soft px-3 py-1.5 text-[12px] sm:text-[12.5px] font-semibold text-ink-800"
+                className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full bg-white border border-ink-100 shadow-soft px-3.5 py-1.5 sm:px-4 sm:py-2 text-[13px] sm:text-[14.5px] font-semibold text-ink-800"
               >
-                <span className="relative flex w-1.5 h-1.5">
+                <span className="relative flex w-2 h-2">
                   <span className="absolute inline-flex w-full h-full rounded-full bg-brand-400 opacity-70 animate-ping" />
-                  <span className="relative inline-flex w-1.5 h-1.5 rounded-full bg-brand-600" />
+                  <span className="relative inline-flex w-2 h-2 rounded-full bg-brand-600" />
                 </span>
                 {p}
               </span>
@@ -104,7 +110,7 @@ export function Hero() {
             className="mt-4 text-ink-600 text-[13.5px] sm:text-[15px] leading-relaxed max-w-2xl mx-auto text-pretty"
           >
             The Postpartum Restore™ is a 25-minute guided assessment that helps
-            you uncover what&apos;s really holding your recovery back — and know
+            you uncover what&apos;s really holding your recovery back, and know
             exactly <span className="font-semibold text-ink-800">where to focus first</span>.
           </motion.p>
         </motion.div>

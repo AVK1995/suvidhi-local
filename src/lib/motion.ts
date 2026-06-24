@@ -46,3 +46,17 @@ export const slideInRight: Variants = {
 }
 
 export const VIEWPORT_ONCE = { once: true, amount: 0.2 } as const
+
+// Eye-catching "attention" loop shared by every primary CTA across the site —
+// a quick pulse + shake burst, then a rest before repeating. Always pair with
+// useReducedMotion() so users who opt out get a static button.
+export const CTA_ATTENTION_ANIMATE = {
+  scale: [1, 1.05, 1, 1.05, 1],
+  rotate: [0, -1, 1, -1, 0],
+}
+export const CTA_ATTENTION_TRANSITION = {
+  duration: 0.85,
+  ease: 'easeInOut' as const,
+  repeat: Infinity,
+  repeatDelay: 1.3,
+}

@@ -354,7 +354,7 @@ export default function CheckoutPage() {
                     <input
                       className="input"
                       type="text"
-                      placeholder="e.g. Mahesh"
+                      placeholder="Enter first name"
                       autoComplete="given-name"
                       value={form.firstName}
                       onChange={(e) => setForm({ ...form, firstName: e.target.value })}
@@ -369,7 +369,7 @@ export default function CheckoutPage() {
                     <input
                       className="input"
                       type="text"
-                      placeholder="e.g. Sharma"
+                      placeholder="Enter last name"
                       autoComplete="family-name"
                       value={form.lastName}
                       onChange={(e) => setForm({ ...form, lastName: e.target.value })}
@@ -413,7 +413,7 @@ export default function CheckoutPage() {
                   <input
                     className="input"
                     type="text"
-                    placeholder="e.g. Mumbai"
+                    placeholder="Enter your city"
                     autoComplete="address-level2"
                     value={form.city}
                     onChange={(e) => setForm({ ...form, city: e.target.value })}
@@ -1035,7 +1035,7 @@ function CouponCard({
         <div className="mt-4 flex flex-col sm:flex-row gap-2.5">
           <input
             type="text"
-            placeholder="e.g. TGOTEST2025"
+            placeholder="Enter coupon code"
             value={coupon.code}
             onChange={(e) =>
               setCoupon({

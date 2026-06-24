@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { getFunnelState, setFunnelState } from '@/lib/funnelState'
@@ -23,7 +23,15 @@ import { SectionHeading } from '@/components/ui/SectionHeading'
 import { TopMarquee } from '@/components/sections/TopMarquee'
 import { Footer } from '@/components/sections/Footer'
 import { BookACallStickyCTA } from '@/components/sections/BookACallStickyCTA'
-import { fadeUp, slideInLeft, slideInRight, stagger, VIEWPORT_ONCE } from '@/lib/motion'
+import {
+  fadeUp,
+  slideInLeft,
+  slideInRight,
+  stagger,
+  VIEWPORT_ONCE,
+  CTA_ATTENTION_ANIMATE,
+  CTA_ATTENTION_TRANSITION,
+} from '@/lib/motion'
 import { cn } from '@/lib/utils'
 import { CALENDLY, OFFER } from '@/lib/config'
 import { ASSETS } from '@/lib/assets'
@@ -633,14 +641,18 @@ function CalendlyPlaceholder() {
 }
 
 function ScrollToCalendarButton({ className }: { className?: string }) {
+  const reduce = useReducedMotion()
   const onClick = () => {
     const el = document.getElementById('calendar')
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
   return (
-    <button
+    <motion.button
       type="button"
       onClick={onClick}
+      whileTap={{ scale: 0.97 }}
+      animate={reduce ? undefined : CTA_ATTENTION_ANIMATE}
+      transition={reduce ? undefined : CTA_ATTENTION_TRANSITION}
       className={cn(
         'group relative inline-flex items-center justify-center gap-2.5',
         'rounded-full font-semibold tracking-tight whitespace-nowrap',
@@ -688,6 +700,6 @@ function ScrollToCalendarButton({ className }: { className?: string }) {
       >
         <ArrowDown className="w-4 h-4" />
       </motion.span>
-    </button>
+    </motion.button>
   )
 }

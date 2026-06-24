@@ -1,9 +1,10 @@
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { ArrowRight, Calendar, ShieldCheck, Sparkles } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useMagnetic, useNearPageBottom, usePastHero } from '@/lib/hooks'
 import { OFFER } from '@/lib/config'
 import { utmQueryString } from '@/lib/utm'
+import { CTA_ATTENTION_ANIMATE, CTA_ATTENTION_TRANSITION } from '@/lib/motion'
 
 export function StickyCTA() {
   const pastHero = usePastHero()
@@ -12,6 +13,7 @@ export function StickyCTA() {
   // never collide visually.
   const show = pastHero && !nearBottom
   const router = useRouter()
+  const reduce = useReducedMotion()
   const btnRef = useMagnetic<HTMLButtonElement>(0.12)
 
   return (
@@ -56,7 +58,7 @@ export function StickyCTA() {
                   <div className="min-w-0 flex-1">
                     <div className="hidden xs:flex sm:flex items-center gap-1.5 text-[10.5px] uppercase tracking-[0.18em] font-semibold text-brand-700">
                       <Sparkles className="w-3 h-3" />
-                      Limited offer
+                      Limited time offer
                     </div>
                     <div className="flex items-baseline gap-1.5 sm:gap-2 leading-tight">
                       <span className="font-display text-[18px] sm:text-xl font-semibold text-ink-950">
@@ -77,6 +79,8 @@ export function StickyCTA() {
                   ref={btnRef}
                   onClick={() => router.push('/checkout' + utmQueryString())}
                   whileTap={{ scale: 0.97 }}
+                  animate={reduce ? undefined : CTA_ATTENTION_ANIMATE}
+                  transition={reduce ? undefined : CTA_ATTENTION_TRANSITION}
                   className="magnet group relative inline-flex items-center justify-center gap-1.5
                              rounded-xl px-4 sm:px-5 py-2.5 sm:py-3
                              bg-brand-600 hover:bg-brand-700 text-white
@@ -86,6 +90,17 @@ export function StickyCTA() {
                              focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/30
                              overflow-hidden"
                 >
+                  {/* Continuous shine sweep to draw the eye */}
+                  <motion.span
+                    aria-hidden
+                    className="pointer-events-none absolute inset-y-0 w-1/3 -skew-x-12"
+                    style={{
+                      background:
+                        'linear-gradient(90deg, transparent, rgba(255,255,255,.45), transparent)',
+                    }}
+                    animate={{ x: ['-150%', '350%'] }}
+                    transition={{ duration: 1, ease: 'easeInOut', repeat: Infinity, repeatDelay: 0.4 }}
+                  />
                   <span
                     aria-hidden
                     className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700"

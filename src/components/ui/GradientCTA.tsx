@@ -4,6 +4,7 @@ import { ArrowRight } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { utmQueryString } from '@/lib/utm'
+import { CTA_ATTENTION_ANIMATE, CTA_ATTENTION_TRANSITION } from '@/lib/motion'
 
 interface GradientCTAProps {
   label?: string
@@ -27,8 +28,8 @@ export function GradientCTA({
       onClick={() => router.push(to + utmQueryString())}
       onHoverStart={() => setHovered(true)}
       onHoverEnd={() => setHovered(false)}
-      animate={reduce ? undefined : { scale: [1, 1.025, 1] }}
-      transition={reduce ? undefined : { duration: 2.6, repeat: Infinity, ease: 'easeInOut' }}
+      animate={reduce ? undefined : CTA_ATTENTION_ANIMATE}
+      transition={reduce ? undefined : CTA_ATTENTION_TRANSITION}
       whileHover={{ scale: 1.04 }}
       whileTap={{ scale: 0.97 }}
       className={cn(

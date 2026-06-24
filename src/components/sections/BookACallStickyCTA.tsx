@@ -1,6 +1,7 @@
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { ArrowDown, CalendarCheck, Sparkles } from 'lucide-react'
 import { useMagnetic, useNearPageBottom, useScrolledPastSticky } from '@/lib/hooks'
+import { CTA_ATTENTION_ANIMATE, CTA_ATTENTION_TRANSITION } from '@/lib/motion'
 
 interface BookACallStickyCTAProps {
   /** ID of the target section to scroll to. Defaults to the calendar block. */
@@ -15,6 +16,7 @@ export function BookACallStickyCTA({
   const past = useScrolledPastSticky(260)
   const nearBottom = useNearPageBottom(200)
   const show = past && !nearBottom
+  const reduce = useReducedMotion()
   const btnRef = useMagnetic<HTMLButtonElement>(0.1)
 
   const handleClick = () => {
@@ -76,6 +78,8 @@ export function BookACallStickyCTA({
                   ref={btnRef}
                   onClick={handleClick}
                   whileTap={{ scale: 0.97 }}
+                  animate={reduce ? undefined : CTA_ATTENTION_ANIMATE}
+                  transition={reduce ? undefined : CTA_ATTENTION_TRANSITION}
                   className="magnet group relative inline-flex items-center justify-center gap-1.5
                              rounded-xl px-4 sm:px-5 py-2.5 sm:py-3
                              bg-brand-600 hover:bg-brand-700 text-white
@@ -85,6 +89,19 @@ export function BookACallStickyCTA({
                              focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/30
                              overflow-hidden"
                 >
+                  {/* Continuous shine sweep to draw the eye */}
+                  {!reduce && (
+                    <motion.span
+                      aria-hidden
+                      className="pointer-events-none absolute inset-y-0 w-1/3 -skew-x-12"
+                      style={{
+                        background:
+                          'linear-gradient(90deg, transparent, rgba(255,255,255,.45), transparent)',
+                      }}
+                      animate={{ x: ['-150%', '350%'] }}
+                      transition={{ duration: 1, ease: 'easeInOut', repeat: Infinity, repeatDelay: 0.4 }}
+                    />
+                  )}
                   <span
                     aria-hidden
                     className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700"
