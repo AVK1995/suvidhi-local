@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { setFunnelState } from '@/lib/funnelState'
-import PhoneInput from 'react-phone-number-input'
+import PhoneInput, { parsePhoneNumber } from 'react-phone-number-input'
 import 'react-phone-number-input/style.css'
 import {
   ArrowLeft,
@@ -28,9 +28,9 @@ import { Footer } from '@/components/sections/Footer'
 import { cn, formatINR } from '@/lib/utils'
 import { fadeUp, stagger } from '@/lib/motion'
 import { OFFER, COUPON } from '@/lib/config'
-import { startCheckout } from '@/lib/razorpay'
-import { captureUtm, utmPayload, utmQueryString } from '@/lib/utm'
-import { pabblyEvent, pixelTrack, reportMilestone } from '@/lib/tracking'
+import { startCheckout, type CheckoutTracking } from '@/lib/razorpay'
+import { captureUtm, utmPayload, utmQueryString, getFbCookies } from '@/lib/utm'
+import { setMetaAdvancedMatching } from '@/lib/tracking'
 
 interface FormState {
   firstName: string
@@ -38,9 +38,6 @@ interface FormState {
   email: string
   phone: string | undefined
   city: string
-  condition: string
-  hba1c: string
-  consent: boolean
 }
 
 interface CouponState {
@@ -56,27 +53,7 @@ const initial: FormState = {
   email: '',
   phone: undefined,
   city: '',
-  condition: '',
-  hba1c: '',
-  consent: false,
 }
-
-const conditions = [
-  'Pre-diabetes',
-  'Type-2 diabetes (early stage)',
-  'Type-2 diabetes (long-standing)',
-  'Family history · concerned',
-  'Other metabolic concern',
-]
-
-const hba1cRanges = [
-  '< 5.7 (Normal)',
-  '5.7 – 6.4 (Pre-diabetes)',
-  '6.5 – 7.5',
-  '7.6 – 9.0',
-  '> 9.0',
-  "I don't know yet",
-]
 
 export default function CheckoutPage() {
   const router = useRouter()
@@ -118,29 +95,43 @@ export default function CheckoutPage() {
   )
 
   useEffect(() => {
-    document.title = 'Checkout · Suvidhi Clarity Call'
+    document.title = 'Checkout · The Postpartum Restore'
     window.scrollTo({ top: 0 })
     captureUtm()
-    // Fire InitiateCheckout pixel + Pabbly event on mount
-    pixelTrack('InitiateCheckout', {
-      value: basePrice,
-      currency: OFFER.currency,
-      content_name: OFFER.name,
-    })
-    pabblyEvent({
-      event: 'checkout.started',
-      amount: basePrice,
-      orderId,
-      isTest: OFFER.price <= 1,
-    })
-  }, [basePrice, orderId])
+  }, [])
+
+  // Manual Advanced Matching once the form is valid + filled (debounced 500ms).
+  // This is NOT a tracked event — it enriches the only browser event (PageView)
+  // with hashed identity for high EMQ. No Purchase/Lead/InitiateCheckout fire on
+  // the browser (Health & Wellness preventive posture).
+  useEffect(() => {
+    const filled =
+      form.firstName.trim() &&
+      form.lastName.trim() &&
+      form.email.trim() &&
+      form.city.trim() &&
+      form.phone
+    if (!filled) return
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) return
+    const country = form.phone ? parsePhoneNumber(form.phone)?.country ?? '' : ''
+    const timer = window.setTimeout(() => {
+      void setMetaAdvancedMatching({
+        email: form.email,
+        phone: form.phone,
+        firstName: form.firstName,
+        lastName: form.lastName,
+        city: form.city,
+        country,
+      })
+    }, 500)
+    return () => window.clearTimeout(timer)
+  }, [form])
 
   const applyCoupon = () => {
     const code = coupon.code.trim().toUpperCase()
     if (!code) return
     if (code === COUPON.code) {
       setCoupon({ code, applied: true, discountPct: COUPON.discountPct })
-      pabblyEvent({ event: 'coupon.applied', coupon: code, amount: 0 })
     } else {
       setCoupon({ ...coupon, code, applied: false, invalid: true })
     }
@@ -154,46 +145,19 @@ export default function CheckoutPage() {
     const next: Partial<Record<keyof FormState, string>> = {}
     if (!form.firstName.trim()) next.firstName = 'Please share your first name'
     if (!form.lastName.trim()) next.lastName = 'Please share your last name'
-    if (!form.email.trim()) next.email = 'We need an email to send the call link'
+    if (!form.email.trim()) next.email = 'We need an email to send your access'
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
       next.email = 'That email looks off — please check'
     if (!form.phone) next.phone = 'Please add a reachable number'
     if (!form.city.trim()) next.city = 'Please add your town or city'
-    if (!form.condition) next.condition = 'Pick the closest match'
-    if (!form.hba1c) next.hba1c = 'Even a rough range helps'
-    if (!form.consent) next.consent = 'Please accept the terms'
     setErrors(next)
     return Object.keys(next).length === 0
   }
 
   const goToBookACall = (paymentId?: string) => {
-    pabblyEvent({
-      event: 'payment.success',
-      name: fullName,
-      email: form.email,
-      phone: form.phone,
-      city: form.city,
-      condition: form.condition,
-      hba1c: form.hba1c,
-      amount: payable,
-      coupon: coupon.applied ? coupon.code : undefined,
-      orderId,
-      paymentId,
-      isTest: OFFER.price <= 1,
-    })
-    reportMilestone('Purchase', {
-      name: fullName,
-      email: form.email,
-      phone: form.phone,
-      city: form.city,
-      amount: payable,
-      orderId,
-      paymentId,
-      coupon: coupon.applied ? coupon.code : undefined,
-      condition: form.condition,
-      hba1c: form.hba1c,
-      isTest: OFFER.price <= 1,
-    })
+    // Server already fired the CAPI `sales` event + wrote the Pabbly row (verify
+    // route for paid, free-order route for coupon). The browser only carries
+    // funnel state forward — no Meta events fire here.
     setFunnelState({
       name: fullName,
       email: form.email,
@@ -213,29 +177,58 @@ export default function CheckoutPage() {
     setSubmitting(true)
     setPaymentError(null)
 
-    // Track lead
-    reportMilestone('Lead', {
-      name: fullName,
+    const country = form.phone ? parsePhoneNumber(form.phone)?.country ?? '' : ''
+
+    // Refresh Manual Advanced Matching with final values (no event fires).
+    void setMetaAdvancedMatching({
+      email: form.email,
+      phone: form.phone,
+      firstName: form.firstName,
+      lastName: form.lastName,
+      city: form.city,
+      country,
+    })
+
+    // Identity + attribution the server needs to fire CAPI `sales` + Pabbly.
+    const fb = getFbCookies()
+    const utm = utmPayload()
+    const isTest = isFreeAfterCoupon || OFFER.price <= 1
+    const tracking: CheckoutTracking = {
+      firstName: form.firstName,
+      lastName: form.lastName,
       email: form.email,
       phone: form.phone,
       city: form.city,
+      countryCode: country,
       amount: payable,
-      coupon: coupon.applied ? coupon.code : undefined,
-      condition: form.condition,
-      hba1c: form.hba1c,
-      isTest: OFFER.price <= 1,
-    })
+      isTest,
+      eventSourceUrl: typeof window !== 'undefined' ? window.location.href : '',
+      fbc: fb.fbc,
+      fbp: fb.fbp,
+      fbclid: utm.fbclid,
+      utm_source: utm.utm_source,
+      utm_medium: utm.utm_medium,
+      utm_campaign: utm.utm_campaign,
+      utm_content: utm.utm_content,
+      utm_term: utm.utm_term,
+    }
 
-    // 100% off path → skip Razorpay
+    // 100%-off path → no Razorpay. Write the Pabbly row server-side (no CAPI),
+    // then continue. Best-effort; navigation never waits on it.
     if (isFreeAfterCoupon) {
-      window.setTimeout(() => {
-        goToBookACall(`FREE-${coupon.code}`)
-      }, 600)
+      const freeId = `FREE-${coupon.code}`
+      void fetch('/api/track/free-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paymentId: freeId, tracking }),
+        keepalive: true,
+      })
+      window.setTimeout(() => goToBookACall(freeId), 600)
       return
     }
 
     // Razorpay: server creates order → modal opens → signature verified
-    // server-side on success. All three steps live inside startCheckout().
+    // server-side on success, where the CAPI `sales` event + Pabbly row fire.
     await startCheckout({
       amount: payable,
       receipt: orderId,
@@ -246,13 +239,12 @@ export default function CheckoutPage() {
       },
       notes: {
         order_id: orderId,
-        condition: form.condition,
-        hba1c: form.hba1c,
         coupon: coupon.applied ? coupon.code : '',
         ...Object.fromEntries(
           Object.entries(utmPayload()).map(([k, v]) => [k, String(v ?? '')]),
         ),
       },
+      tracking,
       onSuccess: (r) => {
         goToBookACall(r.razorpay_payment_id)
       },
@@ -265,21 +257,6 @@ export default function CheckoutPage() {
           message: failure.message,
           code: failure.code,
           reason: failure.reason,
-        })
-        pabblyEvent({
-          event: 'payment.failed',
-          name: fullName,
-          email: form.email,
-          phone: form.phone,
-          city: form.city,
-          amount: payable,
-          orderId,
-          isTest: OFFER.price <= 1,
-          meta: {
-            razorpay_error_code: failure.code,
-            razorpay_error_reason: failure.reason,
-            razorpay_error_source: failure.source,
-          },
         })
       },
     })
@@ -420,56 +397,10 @@ export default function CheckoutPage() {
                   />
                 </Field>
 
-                <div className="grid sm:grid-cols-2 gap-5">
-                  <Field label="Your concern" error={errors.condition}>
-                    <PremiumSelect
-                      value={form.condition}
-                      onChange={(v) => setForm({ ...form, condition: v })}
-                      options={conditions}
-                      placeholder="Pick the closest match"
-                    />
-                  </Field>
-
-                  <Field label="Latest HbA1c (rough)" error={errors.hba1c}>
-                    <PremiumSelect
-                      value={form.hba1c}
-                      onChange={(v) => setForm({ ...form, hba1c: v })}
-                      options={hba1cRanges}
-                      placeholder="Select range"
-                    />
-                  </Field>
-                </div>
-
-                <Checkbox
-                  checked={form.consent}
-                  onChange={(c) => setForm({ ...form, consent: c })}
-                  error={errors.consent}
-                >
-                  I'll fill the pre-call form honestly and treat the 30-minute slot
-                  seriously. I understand this is educational, not medical advice. I
-                  agree to the{' '}
-                  <Link
-                    href="/terms-and-conditions"
-                    className="text-brand-700 underline-offset-2 hover:underline"
-                  >
-                    terms
-                  </Link>
-                  ,{' '}
-                  <Link
-                    href="/privacy-policy"
-                    className="text-brand-700 underline-offset-2 hover:underline"
-                  >
-                    privacy
-                  </Link>{' '}
-                  &{' '}
-                  <Link
-                    href="/refund-policy"
-                    className="text-brand-700 underline-offset-2 hover:underline"
-                  >
-                    refund policy
-                  </Link>
-                  .
-                </Checkbox>
+                {/* Health-condition selects (concern / HbA1c) and the consent
+                    tickbox were removed: this postpartum funnel collects no
+                    sensitive health data, and agreement is shown as a plain
+                    legal line under the Pay button below. */}
 
                 {/* Razorpay failure banner — surfaces the actual error so users
                     aren't stuck staring at a broken submit state. */}
@@ -570,6 +501,31 @@ export default function CheckoutPage() {
                   <Lock className="w-3 h-3 inline-block -translate-y-0.5 mr-1 text-brand-600" />
                   256-bit SSL · PCI-DSS gateway · Full money-back if the call doesn't
                   deliver clarity.
+                </p>
+
+                <p className="text-center text-[12px] text-ink-500 leading-relaxed">
+                  By continuing you agree to our{' '}
+                  <Link
+                    href="/terms-and-conditions"
+                    className="text-brand-700 underline-offset-2 hover:underline"
+                  >
+                    terms
+                  </Link>
+                  ,{' '}
+                  <Link
+                    href="/privacy-policy"
+                    className="text-brand-700 underline-offset-2 hover:underline"
+                  >
+                    privacy
+                  </Link>{' '}
+                  &{' '}
+                  <Link
+                    href="/refund-policy"
+                    className="text-brand-700 underline-offset-2 hover:underline"
+                  >
+                    refund policy
+                  </Link>
+                  .
                 </p>
               </form>
             </motion.div>
@@ -819,148 +775,6 @@ function Field({
             exit={{ opacity: 0, height: 0, y: -4 }}
             transition={{ duration: 0.3 }}
             className="mt-2 text-[12.5px] text-brand-700 font-medium"
-          >
-            {error}
-          </motion.p>
-        )}
-      </AnimatePresence>
-    </div>
-  )
-}
-
-function PremiumSelect({
-  value,
-  onChange,
-  options,
-  placeholder,
-}: {
-  value: string
-  onChange: (v: string) => void
-  options: string[]
-  placeholder: string
-}) {
-  const [open, setOpen] = useState(false)
-
-  useEffect(() => {
-    const handler = () => setOpen(false)
-    window.addEventListener('click', handler)
-    return () => window.removeEventListener('click', handler)
-  }, [])
-
-  return (
-    <div className="relative" onClick={(e) => e.stopPropagation()}>
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        className={cn(
-          'input flex items-center justify-between text-left',
-          !value && 'text-ink-400',
-        )}
-      >
-        <span className="truncate">{value || placeholder}</span>
-        <ChevronDown
-          className={cn(
-            'w-4 h-4 text-ink-500 transition-transform duration-300 shrink-0 ml-2',
-            open && 'rotate-180',
-          )}
-        />
-      </button>
-      <AnimatePresence>
-        {open && (
-          <motion.ul
-            initial={{ opacity: 0, y: -6, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -6, scale: 0.98 }}
-            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute z-20 mt-2 w-full rounded-2xl bg-white border border-ink-100 shadow-elev overflow-hidden p-1"
-          >
-            {options.map((o) => (
-              <li key={o}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    onChange(o)
-                    setOpen(false)
-                  }}
-                  className={cn(
-                    'w-full text-left px-3.5 py-2.5 rounded-xl text-[14.5px] transition-all duration-200',
-                    'hover:bg-brand-50 hover:text-brand-800',
-                    value === o
-                      ? 'bg-brand-50 text-brand-800 font-semibold'
-                      : 'text-ink-800',
-                  )}
-                >
-                  {o}
-                </button>
-              </li>
-            ))}
-          </motion.ul>
-        )}
-      </AnimatePresence>
-    </div>
-  )
-}
-
-function Checkbox({
-  checked,
-  onChange,
-  children,
-  error,
-}: {
-  checked: boolean
-  onChange: (v: boolean) => void
-  children: React.ReactNode
-  error?: string
-}) {
-  return (
-    <div>
-      <label className="flex items-start gap-3 cursor-pointer select-none group">
-        <span className="relative shrink-0 mt-0.5">
-          <input
-            type="checkbox"
-            className="sr-only peer"
-            checked={checked}
-            onChange={(e) => onChange(e.target.checked)}
-          />
-          <span
-            className={cn(
-              'inline-flex w-5 h-5 rounded-md border-2 items-center justify-center transition-all duration-300',
-              checked
-                ? 'bg-brand-600 border-brand-600 shadow-soft'
-                : 'bg-white border-ink-300 group-hover:border-ink-500',
-            )}
-          >
-            <AnimatePresence>
-              {checked && (
-                <motion.svg
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0, opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                  viewBox="0 0 24 24"
-                  className="w-3 h-3 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="3.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M5 12l5 5 9-11" />
-                </motion.svg>
-              )}
-            </AnimatePresence>
-          </span>
-        </span>
-        <span className="text-[14px] text-ink-700 leading-relaxed">{children}</span>
-      </label>
-      <AnimatePresence>
-        {error && (
-          <motion.p
-            initial={{ opacity: 0, height: 0, y: -4 }}
-            animate={{ opacity: 1, height: 'auto', y: 0 }}
-            exit={{ opacity: 0, height: 0, y: -4 }}
-            transition={{ duration: 0.3 }}
-            className="mt-2 text-[12.5px] text-brand-700 font-medium pl-8"
           >
             {error}
           </motion.p>

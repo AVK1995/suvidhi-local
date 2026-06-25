@@ -26,7 +26,7 @@ import { Footer } from '@/components/sections/Footer'
 import { fadeUp, scaleIn, stagger, VIEWPORT_ONCE } from '@/lib/motion'
 import { BRAND, WHATSAPP } from '@/lib/config'
 import { appendUtm } from '@/lib/utm'
-import { pixelTrack } from '@/lib/tracking'
+import { reapplyMamFromCookie } from '@/lib/tracking'
 
 interface ThankYouState {
   name?: string
@@ -101,12 +101,11 @@ export default function ThankYouPage() {
   useEffect(() => {
     document.title = "You're in · Welcome to The Postpartum Restore"
     window.scrollTo({ top: 0 })
-    pixelTrack('CompleteRegistration', {
-      content_name: 'The Postpartum Restore',
-      value: s.amountPaid,
-      currency: 'INR',
-    })
-  }, [s.amountPaid])
+    // Safety net: re-apply Manual Advanced Matching from the persisted cookie so
+    // this PageView stays identified. No conversion event fires on the browser
+    // (Health & Wellness preventive posture — PageView only).
+    reapplyMamFromCookie()
+  }, [])
 
   const communityUrl = WHATSAPP.communityUrl ? appendUtm(WHATSAPP.communityUrl) : ''
 
@@ -245,9 +244,6 @@ export default function ThankYouPage() {
                 href={communityUrl || '#'}
                 target={communityUrl ? '_blank' : undefined}
                 rel={communityUrl ? 'noopener noreferrer' : undefined}
-                onClick={() =>
-                  pixelTrack('Lead', { content_name: 'Community Access' })
-                }
                 initial={{ opacity: 0 }}
                 animate={{
                   opacity: 1,

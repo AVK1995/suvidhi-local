@@ -95,10 +95,16 @@ export const CALENDLY = {
   hideEventTypeDetails: bool(process.env.NEXT_PUBLIC_CALENDLY_HIDE_EVENT_TYPE_DETAILS, false),
 } as const
 
+// Client-safe Meta config. The CAPI access token is intentionally NOT here —
+// it's a server-only secret read directly from process.env.META_CAPI_ACCESS_TOKEN
+// inside the API routes (see src/lib/server/metaCapi.ts). The pixel ID is not a
+// secret (it's inlined for fbq anyway). A test-event code of '0' counts as off.
 export const META_PIXEL = {
   id: str(process.env.NEXT_PUBLIC_META_PIXEL_ID, ''),
-  capiEndpoint: str(process.env.NEXT_PUBLIC_META_CAPI_ENDPOINT, ''),
-  testEventCode: str(process.env.NEXT_PUBLIC_META_TEST_EVENT_CODE, ''),
+  testEventCode: (() => {
+    const v = str(process.env.NEXT_PUBLIC_META_TEST_EVENT_CODE, '')
+    return v === '0' ? '' : v
+  })(),
 } as const
 
 export const PABBLY = {

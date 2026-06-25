@@ -47,6 +47,32 @@ export interface PaymentError {
   raw?: unknown
 }
 
+/**
+ * Identity + attribution forwarded to the verify route so the server can fire
+ * the Meta CAPI `sales` event + write the Pabbly CRM row after a valid signature.
+ * Mirrors TrackingPayload in src/lib/server/purchaseTracking.ts (kept as a plain
+ * client type because that module is server-only / imports node:crypto).
+ */
+export interface CheckoutTracking {
+  firstName?: string
+  lastName?: string
+  email?: string
+  phone?: string
+  city?: string
+  countryCode?: string
+  amount?: number
+  isTest?: boolean
+  eventSourceUrl?: string
+  fbc?: string
+  fbp?: string
+  fbclid?: string
+  utm_source?: string
+  utm_medium?: string
+  utm_campaign?: string
+  utm_content?: string
+  utm_term?: string
+}
+
 export interface CheckoutInput {
   /** Amount in INR major units. 1 = ₹1. */
   amount: number
@@ -54,6 +80,8 @@ export interface CheckoutInput {
   notes?: Record<string, string>
   /** Internal receipt / reference (max 40 chars per Razorpay). */
   receipt?: string
+  /** Forwarded to the verify route for server-side CAPI + Pabbly firing. */
+  tracking?: CheckoutTracking
   onSuccess: (r: PaymentSuccess) => void | Promise<void>
   onFailure?: (e: PaymentError) => void
   onDismiss?: () => void
@@ -129,8 +157,10 @@ export async function startCheckout(input: CheckoutInput): Promise<void> {
         escape: true,
       },
       handler: async (response: PaymentSuccess) => {
-        // 4) Verify signature server-side before trusting success
-        const ok = await verifyPayment(response)
+        // 4) Verify signature server-side before trusting success. The same
+        //    call forwards tracking so the server fires CAPI + Pabbly on a
+        //    verified payment.
+        const ok = await verifyPayment(response, input.tracking)
         if (!ok) {
           input.onFailure?.({
             message:
@@ -230,12 +260,15 @@ async function createOrder(input: {
   }
 }
 
-async function verifyPayment(input: PaymentSuccess): Promise<boolean> {
+async function verifyPayment(
+  input: PaymentSuccess,
+  tracking?: CheckoutTracking,
+): Promise<boolean> {
   try {
     const r = await fetch('/api/razorpay/verify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(input),
+      body: JSON.stringify({ ...input, tracking }),
     })
     const data = (await r.json()) as { valid?: boolean }
     return !!data.valid

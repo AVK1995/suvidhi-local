@@ -1,21 +1,20 @@
-import { META_PIXEL, PABBLY, BRAND, OFFER } from './config'
-import {
-  buildFullPayload,
-  getFbCookies,
-  utmPayload,
-  type IdentityInput,
-} from './utm'
+import { META_PIXEL } from './config'
 
 // =====================================================================
-// Meta Pixel
+// Meta Pixel (browser) — PageView ONLY.
+//
+// Health & Wellness preventive posture: the browser fires NO conversion
+// events (no Purchase / Lead / InitiateCheckout / Schedule / CompleteReg).
+// The only browser event is PageView, enriched with Manual Advanced Matching
+// (hashed identity) so it still matches at high EMQ. All conversion signals
+// come from the server (custom `sales` CAPI) + the Apps Script downstream.
 // =====================================================================
 
 type MetaParams = Record<string, unknown>
 
 interface FbqWindow {
-  fbq?: ((cmd: 'init', id: string) => void) &
-    ((cmd: 'track', event: string, params?: MetaParams) => void) &
-    ((cmd: 'trackCustom', event: string, params?: MetaParams) => void) & {
+  fbq?: ((cmd: 'init', id: string, params?: MetaParams) => void) &
+    ((cmd: 'track', event: string, params?: MetaParams) => void) & {
       callMethod?: unknown
       queue?: unknown[]
       loaded?: boolean
@@ -24,6 +23,11 @@ interface FbqWindow {
     }
   _fbq?: unknown
 }
+
+// First-party cookie holding the hashed Advanced Matching values so EVERY
+// PageView (not just the one after form-fill) inherits identity. 30-day TTL.
+const MAM_COOKIE = 'svd_mam'
+const MAM_TTL_SECONDS = 30 * 24 * 60 * 60
 
 let pixelInitialised = false
 
@@ -53,6 +57,12 @@ export function initMetaPixel(): void {
   document.head.appendChild(script)
 
   w.fbq?.('init', META_PIXEL.id)
+  // Re-init with any persisted Advanced Matching BEFORE the first PageView so
+  // returning visitors fire an identified PageView (high EMQ).
+  const mam = readMamCookie()
+  if (mam && Object.keys(mam).length) {
+    w.fbq?.('init', META_PIXEL.id, mam)
+  }
   w.fbq?.('track', 'PageView')
   pixelInitialised = true
 }
@@ -63,149 +73,97 @@ export function pixelTrack(event: string, params: MetaParams = {}): void {
   w.fbq('track', event, params)
 }
 
-export function pixelTrackCustom(event: string, params: MetaParams = {}): void {
-  const w = window as unknown as FbqWindow
-  if (!w.fbq) return
-  w.fbq('trackCustom', event, params)
-}
-
 // =====================================================================
-// Meta CAPI (server-side relay)
+// Manual Advanced Matching (MAM) — hashed identity for PageView EMQ.
 // =====================================================================
 
-interface CapiUser {
+export interface MatchingInput {
   email?: string
   phone?: string
-  name?: string
-  externalId?: string
+  firstName?: string
+  lastName?: string
+  city?: string
+  /** 2-letter ISO (e.g. "IN"); case-insensitive. */
+  country?: string
 }
 
-export async function capiTrack(
-  event: string,
-  user: CapiUser = {},
-  custom: MetaParams = {},
-): Promise<void> {
-  if (!META_PIXEL.capiEndpoint) return
+/** SHA-256 hex via Web Crypto (HTTPS + http://localhost). Pre-hashing means the
+ * cookie never stores plain PII; Meta treats 64-char hex as already-hashed. */
+async function sha256Hex(value: string): Promise<string> {
+  if (typeof crypto === 'undefined' || !crypto.subtle) return value
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value))
+  return Array.from(new Uint8Array(buf))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('')
+}
+
+async function buildMatching(d: MatchingInput): Promise<Record<string, string>> {
+  const norm: Record<string, string | undefined> = {}
+  if (d.email) norm.em = d.email.trim().toLowerCase()
+  if (d.phone) {
+    const digits = d.phone.replace(/\D/g, '')
+    if (digits) norm.ph = digits
+  }
+  if (d.firstName) norm.fn = d.firstName.trim().toLowerCase()
+  if (d.lastName) norm.ln = d.lastName.trim().toLowerCase()
+  if (d.city) {
+    const ct = d.city.trim().toLowerCase().replace(/[^a-z]/g, '')
+    if (ct) norm.ct = ct
+  }
+  if (d.country) {
+    const country = d.country.trim().toLowerCase()
+    if (country) norm.country = country
+  }
+
+  const keys = Object.keys(norm) as Array<keyof typeof norm>
+  const hashes = await Promise.all(keys.map((k) => sha256Hex(norm[k] as string)))
+  const matching: Record<string, string> = {}
+  keys.forEach((k, i) => {
+    matching[k as string] = hashes[i]
+  })
+  // external_id MUST equal sha256(email) and match the server CAPI value.
+  if (matching.em) matching.external_id = matching.em
+  return matching
+}
+
+function writeMamCookie(matching: Record<string, string>) {
+  if (typeof document === 'undefined') return
+  if (Object.keys(matching).length === 0) return
+  const value = encodeURIComponent(JSON.stringify(matching))
+  document.cookie = `${MAM_COOKIE}=${value}; Path=/; Max-Age=${MAM_TTL_SECONDS}; SameSite=Lax`
+}
+
+function readMamCookie(): Record<string, string> | null {
+  if (typeof document === 'undefined') return null
+  const match = document.cookie.match(new RegExp(`(?:^|;\\s*)${MAM_COOKIE}=([^;]+)`))
+  if (!match) return null
   try {
-    const fb = getFbCookies()
-    await fetch(META_PIXEL.capiEndpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        event_name: event,
-        event_time: Math.floor(Date.now() / 1000),
-        event_source_url: window.location.href,
-        action_source: 'website',
-        test_event_code: META_PIXEL.testEventCode || undefined,
-        user_data: { ...user, fbc: fb.fbc, fbp: fb.fbp },
-        custom_data: custom,
-        utm: utmPayload(),
-      }),
-      keepalive: true,
-    })
+    const parsed = JSON.parse(decodeURIComponent(match[1]))
+    return parsed && typeof parsed === 'object' ? parsed : null
   } catch {
-    // analytics should never break UX
+    return null
   }
 }
 
-// =====================================================================
-// Pabbly Connect webhook
-// =====================================================================
-
-export type PabblyEventName =
-  | 'lead.captured'
-  | 'checkout.started'
-  | 'coupon.applied'
-  | 'payment.success'
-  | 'payment.failed'
-  | 'call.booked'
-
-export interface PabblyEventInput extends IdentityInput {
-  event: PabblyEventName
-  coupon?: string
-  orderId?: string
-  paymentId?: string
-  condition?: string
-  hba1c?: string
-  meta?: Record<string, unknown>
+/**
+ * Re-init the pixel with hashed Advanced Matching from raw form values, and
+ * persist them to the first-party cookie. Call on form-fill + on payment
+ * success. Subsequent PageViews inherit this identity.
+ */
+export async function setMetaAdvancedMatching(d: MatchingInput): Promise<void> {
+  const w = window as unknown as FbqWindow
+  if (!w.fbq || !META_PIXEL.id) return
+  const matching = await buildMatching(d)
+  if (Object.keys(matching).length === 0) return
+  w.fbq('init', META_PIXEL.id, matching)
+  writeMamCookie(matching)
 }
 
-export async function pabblyEvent(input: PabblyEventInput): Promise<void> {
-  if (!PABBLY.webhookUrl) return
-  const payload = buildFullPayload({
-    name: input.name,
-    email: input.email,
-    phone: input.phone,
-    city: input.city,
-    amount: input.amount,
-    isTest: input.isTest,
-  })
-  try {
-    await fetch(PABBLY.webhookUrl, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        event: input.event,
-        brand: BRAND.name,
-        product: OFFER.name,
-        currency: OFFER.currency,
-        // Extra business context Pabbly can branch on
-        coupon: input.coupon ?? '',
-        order_id: input.orderId ?? '',
-        payment_id: input.paymentId ?? '',
-        condition: input.condition ?? '',
-        hba1c: input.hba1c ?? '',
-        ...payload,
-        meta: input.meta,
-      }),
-      keepalive: true,
-    })
-  } catch {
-    /* ignore */
-  }
-}
-
-// =====================================================================
-// Milestone helper — pixel + CAPI + Pabbly in one call.
-// =====================================================================
-
-export function reportMilestone(
-  event: 'Lead' | 'InitiateCheckout' | 'Purchase' | 'Schedule',
-  payload: {
-    name?: string
-    email?: string
-    phone?: string
-    city?: string
-    amount?: number
-    orderId?: string
-    paymentId?: string
-    coupon?: string
-    condition?: string
-    hba1c?: string
-    isTest?: boolean
-  } = {},
-): void {
-  pixelTrack(event, {
-    value: payload.amount,
-    currency: OFFER.currency,
-    coupon: payload.coupon,
-  })
-  capiTrack(
-    event,
-    { email: payload.email, phone: payload.phone, name: payload.name },
-    { value: payload.amount, currency: OFFER.currency, coupon: payload.coupon },
-  )
-  const pabblyEventName: PabblyEventName =
-    event === 'Lead'
-      ? 'lead.captured'
-      : event === 'InitiateCheckout'
-      ? 'checkout.started'
-      : event === 'Purchase'
-      ? 'payment.success'
-      : 'call.booked'
-  pabblyEvent({
-    event: pabblyEventName,
-    ...payload,
-  })
+/** Safety net: re-apply MAM from the persisted cookie (e.g. on /thank-you). */
+export function reapplyMamFromCookie(): void {
+  const w = window as unknown as FbqWindow
+  if (!w.fbq || !META_PIXEL.id) return
+  const matching = readMamCookie()
+  if (!matching || Object.keys(matching).length === 0) return
+  w.fbq('init', META_PIXEL.id, matching)
 }

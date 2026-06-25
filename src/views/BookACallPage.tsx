@@ -33,10 +33,9 @@ import {
   CTA_ATTENTION_TRANSITION,
 } from '@/lib/motion'
 import { cn } from '@/lib/utils'
-import { CALENDLY, OFFER } from '@/lib/config'
+import { CALENDLY } from '@/lib/config'
 import { ASSETS } from '@/lib/assets'
 import { loadUtm, utmQueryString } from '@/lib/utm'
-import { pabblyEvent, pixelTrack } from '@/lib/tracking'
 
 interface CheckoutState {
   name?: string
@@ -124,19 +123,10 @@ export default function BookACallPage() {
       if (!data || typeof data !== 'object') return
       const eventName = (data as { event?: string }).event
       if (eventName === 'calendly.event_scheduled') {
-        pixelTrack('Schedule', { content_name: 'Postpartum Assessment Call' })
-        pabblyEvent({
-          event: 'call.booked',
-          name: checkoutState.name,
-          email: checkoutState.email,
-          phone: checkoutState.phone,
-          amount: checkoutState.amountPaid,
-          coupon: checkoutState.coupon,
-          orderId: checkoutState.orderId,
-          paymentId: checkoutState.paymentId,
-          isTest: OFFER.price <= 1,
-          meta: { calendly: (data as { payload?: unknown }).payload },
-        })
+        // No browser Meta event fires here (only PageView is allowed). The call
+        // booking is reflected in the CRM Sheet, where the sales team marks the
+        // lead "qualified" → the Apps Script fires the downstream QualifiedLead
+        // CAPI event.
         setFunnelState(checkoutState)
         router.push('/thank-you' + utmQueryString())
       }
