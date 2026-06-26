@@ -535,14 +535,14 @@ export default function BookACallPage() {
                 </div>
 
                 <div className="relative mt-6 space-y-4 text-brand-800 text-[1.05rem] sm:text-[1.2rem] leading-relaxed text-pretty">
-                  <p className="font-script" style={{ fontFamily: "'Pacifico', cursive" }}>
+                  <p className="font-script">
                     I personally conduct every Postpartum Assessment Call myself.
                   </p>
-                  <p className="font-script" style={{ fontFamily: "'Pacifico', cursive" }}>
+                  <p className="font-script">
                     Because my coaching schedule is limited, I can only accommodate a
                     limited number of calls each week.
                   </p>
-                  <p className="font-script" style={{ fontFamily: "'Pacifico', cursive" }}>
+                  <p className="font-script">
                     If you'd like to take advantage of this bonus session included with
                     your purchase, I encourage you to reserve your spot now.
                   </p>

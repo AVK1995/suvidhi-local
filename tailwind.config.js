@@ -49,9 +49,9 @@ export default {
         },
       },
       fontFamily: {
-        display: ['"Sora"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        sans: ['"Inter Tight"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        script: ['"Pacifico"', 'cursive'],
+        display: ['var(--font-sora)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-inter-tight)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        script: ['var(--font-pacifico)', 'cursive'],
       },
       borderRadius: {
         '4xl': '2rem',

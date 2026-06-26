@@ -1,15 +1,9 @@
-'use client'
+import LandingPage from '@/views/LandingPage'
 
-import dynamic from 'next/dynamic'
-import { RouteFallback } from '@/components/ui/RouteFallback'
-
-// Client-only render mirrors the original SPA (the app reads localStorage,
-// cookies and window throughout), so there's no SSR/hydration mismatch.
-const LandingPage = dynamic(() => import('@/views/LandingPage'), {
-  ssr: false,
-  loading: () => <RouteFallback />,
-})
-
+// Server-rendered so the hero (and its LCP image) ship in the initial HTML
+// instead of waiting for the client bundle to download + hydrate. LandingPage
+// is a client component — all of its browser access lives in effects — so it
+// pre-renders to HTML cleanly with no hydration mismatch.
 export default function Page() {
   return <LandingPage />
 }

@@ -47,7 +47,7 @@ export function Hero() {
         {/* ── Title block ── */}
         <motion.div
           variants={stagger(0.07, 0.06)}
-          initial="hidden"
+          initial={false}
           animate="show"
           className="mx-auto max-w-4xl text-center flex flex-col items-center"
         >
@@ -119,7 +119,7 @@ export function Hero() {
         <motion.div
           id="offer"
           variants={stagger(0.06, 0.12)}
-          initial="hidden"
+          initial={false}
           animate="show"
           className="mt-9 sm:mt-12 grid grid-cols-1 lg:grid-cols-2 gap-5 lg:gap-7 items-stretch scroll-mt-6"
         >
@@ -157,7 +157,7 @@ export function Hero() {
             <div className="relative flex items-start gap-3 mb-4">
               <span
                 className="font-script text-brand-200 text-xl sm:text-2xl leading-tight -rotate-3"
-                style={{ fontFamily: "'Pacifico', cursive", textShadow: '0 1px 12px rgba(236,158,169,.3)' }}
+                style={{ textShadow: '0 1px 12px rgba(236,158,169,.3)' }}
               >
                 The Postpartum
                 <br />
