@@ -1,17 +1,25 @@
+'use client'
+
 import { useEffect } from 'react'
+import dynamic from 'next/dynamic'
 import { Hero } from '@/components/sections/Hero'
 import { SoundLikeYou } from '@/components/sections/SoundLikeYou'
-import { RecoveryCycle } from '@/components/sections/RecoveryCycle'
-import { Modules } from '@/components/sections/Modules'
-import { Testimonials } from '@/components/sections/Testimonials'
-import { ClarityCall } from '@/components/sections/ClarityCall'
-import { ValueStack } from '@/components/sections/ValueStack'
-import { Guarantee } from '@/components/sections/Guarantee'
-import { Clinician } from '@/components/sections/Clinician'
-import { FAQ } from '@/components/sections/FAQ'
-import { Footer } from '@/components/sections/Footer'
-import { StickyCTA } from '@/components/sections/StickyCTA'
 import { TopMarquee } from '@/components/sections/TopMarquee'
+
+// Below-the-fold sections are split out of the initial JS bundle. They render
+// on the client once their chunk loads — none of them are part of the LCP, so
+// deferring them trims initial JS execution / main-thread work without any
+// visible change. Hero + the first band stay eager (they're at/near the top).
+const RecoveryCycle = dynamic(() => import('@/components/sections/RecoveryCycle').then((m) => m.RecoveryCycle))
+const Modules = dynamic(() => import('@/components/sections/Modules').then((m) => m.Modules))
+const Testimonials = dynamic(() => import('@/components/sections/Testimonials').then((m) => m.Testimonials))
+const ClarityCall = dynamic(() => import('@/components/sections/ClarityCall').then((m) => m.ClarityCall))
+const ValueStack = dynamic(() => import('@/components/sections/ValueStack').then((m) => m.ValueStack))
+const Guarantee = dynamic(() => import('@/components/sections/Guarantee').then((m) => m.Guarantee))
+const Clinician = dynamic(() => import('@/components/sections/Clinician').then((m) => m.Clinician))
+const FAQ = dynamic(() => import('@/components/sections/FAQ').then((m) => m.FAQ))
+const Footer = dynamic(() => import('@/components/sections/Footer').then((m) => m.Footer))
+const StickyCTA = dynamic(() => import('@/components/sections/StickyCTA').then((m) => m.StickyCTA))
 
 export default function LandingPage() {
   useEffect(() => {

@@ -1,7 +1,33 @@
 import type { Metadata, Viewport } from 'next'
 import Script from 'next/script'
+import { Sora, Inter_Tight, Pacifico } from 'next/font/google'
 import '@/index.css'
 import { Analytics } from './Analytics'
+
+// Self-hosted via next/font — eliminates the render-blocking Google Fonts
+// stylesheet (and its two preconnects). Each family is exposed as a CSS
+// variable that index.css / tailwind reference. display:swap paints fallback
+// text immediately so the font never blocks FCP/LCP.
+const sora = Sora({
+  subsets: ['latin'],
+  weight: ['500', '600', '700', '800'],
+  display: 'swap',
+  variable: '--font-sora',
+})
+
+const interTight = Inter_Tight({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  display: 'swap',
+  variable: '--font-inter-tight',
+})
+
+const pacifico = Pacifico({
+  subsets: ['latin'],
+  weight: '400',
+  display: 'swap',
+  variable: '--font-pacifico',
+})
 
 export const metadata: Metadata = {
   title: "Suvidhi — The Postpartum Restore™ · Find Out Why You Haven't Recovered",
@@ -24,23 +50,14 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${sora.variable} ${interTight.variable} ${pacifico.variable}`}>
       <head>
-        {/* Preconnects for performance */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://checkout.razorpay.com" />
-        <link rel="preconnect" href="https://connect.facebook.net" />
-        <link rel="preconnect" href="https://calendly.com" />
+        {/* Preconnect only to the origins that fire on initial load (analytics
+            scripts below). Razorpay / Calendly are connected on their own
+            pages. Lighthouse flags >4 preconnects, so keep this list tight. */}
         <link rel="preconnect" href="https://www.googletagmanager.com" />
         <link rel="preconnect" href="https://www.clarity.ms" />
-        {/* Fonts: Pacifico (script accent) + Sora (modern geometric display) +
-            Inter Tight (clean sans body). display=swap renders fallback text
-            immediately. */}
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Pacifico&family=Sora:wght@500;600;700;800&family=Inter+Tight:wght@400;500;600;700&display=swap"
-        />
+        <link rel="preconnect" href="https://connect.facebook.net" />
       </head>
       <body className="bg-cream text-ink-900 antialiased">
         <noscript>
@@ -52,8 +69,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Analytics />
         {children}
 
-        {/* Microsoft Clarity — session/heatmap analytics (project vi86v72ho2) */}
-        <Script id="ms-clarity" strategy="afterInteractive">
+        {/* Microsoft Clarity — session/heatmap analytics (project vi86v72ho2).
+            lazyOnload defers it until the browser is idle so it never competes
+            with the critical render path or inflates TBT. */}
+        <Script id="ms-clarity" strategy="lazyOnload">
           {`(function(c,l,a,r,i,t,y){
               c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
               t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
@@ -64,9 +83,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* Google Analytics 4 — gtag.js (G-Q1RHVTJQJ7) */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-Q1RHVTJQJ7"
-          strategy="afterInteractive"
+          strategy="lazyOnload"
         />
-        <Script id="ga4-gtag" strategy="afterInteractive">
+        <Script id="ga4-gtag" strategy="lazyOnload">
           {`window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
