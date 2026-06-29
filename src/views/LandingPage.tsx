@@ -26,11 +26,11 @@ export default function LandingPage() {
     document.title = 'Suvidhi — The Postpartum Restore™ · Find Out Why You Haven\'t Recovered'
   }, [])
 
-  // Layout + section order mirror the TrainerGoesOnline funnel page (per the
-  // reference screenshots): hero w/ product mockup → launch-offer box → "does
-  // this sound like you" → the cycle + consequences → 5 modules (stacking
-  // cards) → testimonials slider → what's included → value-stack recap →
-  // guarantee → clinician → FAQ. Pink brand theme + our type hierarchy.
+  // Section order: hero w/ product mockup → launch-offer box → "does this sound
+  // like you" → testimonials ("real mothers, real recoveries") → the cycle +
+  // consequences ("left unaddressed, this leads to") → 5 modules (stacking
+  // cards) → strategic clarity call → what's included → guarantee → clinician →
+  // FAQ. Pink brand theme + our type hierarchy.
   return (
     <div className="relative">
       {/* Scrolling trust marquee — same as the checkout / book-a-call / thank-you
@@ -38,17 +38,20 @@ export default function LandingPage() {
       <TopMarquee />
       {/* Alternating dark/light rhythm — `.band-dark` (see index.css) gives a
           section a deep brand background with inverted loose-text, while white
-          cards keep their normal dark text so contrast stays safe. */}
+          cards keep their normal dark text so contrast stays safe. With
+          Testimonials moved up under SoundLikeYou, the bands downstream flip so
+          the rhythm stays strictly dark→light→dark (RecoveryCycle is now dark,
+          Modules now light). */}
       <main className="relative">
         <Hero />
         <div className="band-dark">
           <SoundLikeYou />
         </div>
-        <RecoveryCycle />
-        <div className="band-dark">
-          <Modules />
-        </div>
         <Testimonials />
+        <div className="band-dark">
+          <RecoveryCycle />
+        </div>
+        <Modules />
         <div className="band-dark">
           <ClarityCall />
         </div>

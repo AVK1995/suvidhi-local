@@ -41,12 +41,15 @@ export function RecoveryCycle() {
           viewport={VIEWPORT_ONCE}
           className="flex items-center justify-center gap-2 sm:gap-3"
         >
-          <span aria-hidden className="hidden sm:inline-block h-px w-12 bg-brand-200" />
-          <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-[10.5px] sm:text-[13px] uppercase tracking-[0.14em] sm:tracking-[0.18em] font-bold text-brand-700">
+          <span aria-hidden className="hidden sm:inline-block h-px w-12 bg-brand-300/60" />
+          {/* This section sits on a dark band, so the eyebrow uses the light
+              brand tint (brand-700 is near-identical to the band and blends in)
+              — same treatment as the "MODULE 01" labels on dark. */}
+          <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-[10.5px] sm:text-[13px] uppercase tracking-[0.14em] sm:tracking-[0.18em] font-bold text-brand-200">
             <AlertTriangle className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
             Left unaddressed, this leads to
           </span>
-          <span aria-hidden className="hidden sm:inline-block h-px w-12 bg-brand-200" />
+          <span aria-hidden className="hidden sm:inline-block h-px w-12 bg-brand-300/60" />
         </motion.div>
 
         <motion.ul
