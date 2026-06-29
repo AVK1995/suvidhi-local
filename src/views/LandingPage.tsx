@@ -26,11 +26,10 @@ export default function LandingPage() {
     document.title = 'Suvidhi — The Postpartum Restore™ · Find Out Why You Haven\'t Recovered'
   }, [])
 
-  // Layout + section order mirror the TrainerGoesOnline funnel page (per the
-  // reference screenshots): hero w/ product mockup → launch-offer box → "does
-  // this sound like you" → the cycle + consequences → 5 modules (stacking
-  // cards) → testimonials slider → what's included → value-stack recap →
-  // guarantee → clinician → FAQ. Pink brand theme + our type hierarchy.
+  // Section order: hero → "does this sound like you" → testimonials slider →
+  // the cycle + consequences ("Left unaddressed…") → 5 modules (stacking cards)
+  // → what's included → value-stack recap → guarantee → clinician → FAQ.
+  // band-dark alternates every other section so the dark/light rhythm holds.
   return (
     <div className="relative">
       {/* Scrolling trust marquee — same as the checkout / book-a-call / thank-you
@@ -44,11 +43,15 @@ export default function LandingPage() {
         <div className="band-dark">
           <SoundLikeYou />
         </div>
-        <RecoveryCycle />
-        <div className="band-dark">
-          <Modules />
-        </div>
+        {/* Testimonials moved up to sit directly under "Does this sound like
+            you?". The rest of the order is unchanged (RecoveryCycle onward).
+            band-dark flips on RecoveryCycle + Modules so the dark/light rhythm
+            keeps strictly alternating after the move. */}
         <Testimonials />
+        <div className="band-dark">
+          <RecoveryCycle />
+        </div>
+        <Modules />
         <div className="band-dark">
           <ClarityCall />
         </div>
