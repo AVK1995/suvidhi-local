@@ -1,9 +1,17 @@
-import { motion } from 'framer-motion'
-import { ShieldCheck, CheckCircle2, Clock } from 'lucide-react'
+import { motion, useReducedMotion } from 'framer-motion'
+import { ShieldCheck, CheckCircle2, Clock, ArrowDown } from 'lucide-react'
 import { Container } from '@/components/ui/Container'
 import Image from 'next/image'
 import { GradientCTA } from '@/components/ui/GradientCTA'
-import { fadeUp, scaleIn, slideInLeft, slideInRight, stagger } from '@/lib/motion'
+import {
+  fadeUp,
+  scaleIn,
+  slideInLeft,
+  slideInRight,
+  stagger,
+  CTA_ATTENTION_ANIMATE,
+  CTA_ATTENTION_TRANSITION,
+} from '@/lib/motion'
 import { OFFER } from '@/lib/config'
 
 const PAIN_POINTS = [
@@ -20,9 +28,12 @@ const INCLUDED = [
   'Private Postpartum Mothers Community',
   'Monthly Group Coaching Sessions',
   '30-Min Assessment Call with Suvidhi',
+  'UK-trained Clinical Nutritionist',
+  'Postpartum Recovery Specialist',
 ]
 
 export function Hero() {
+  const reduce = useReducedMotion()
   return (
     <section id="top" className="relative isolate overflow-hidden">
       {/* Ambient backdrop */}
@@ -43,7 +54,7 @@ export function Hero() {
         />
       </div>
 
-      <Container className="relative pt-10 pb-12 sm:pt-14 sm:pb-16 lg:pt-20">
+      <Container className="relative pt-10 pb-12 sm:pt-14 sm:pb-16 lg:pt-8 lg:pb-16">
         {/* ── Title block ── */}
         <motion.div
           variants={stagger(0.07, 0.06)}
@@ -83,26 +94,19 @@ export function Hero() {
             ))}
           </motion.div>
 
-          {/* Title — two lines */}
+          {/* Title — single headline, two highlighted phrases */}
           <motion.h1
             variants={fadeUp}
-            className="font-display font-semibold leading-[1.12] tracking-tight text-ink-950 mt-5 text-[1.8rem] xs:text-[2.05rem] sm:text-[2.45rem] lg:text-[2.95rem]"
+            className="font-display font-semibold leading-[1.14] tracking-tight text-ink-950 mt-5 text-[1.8rem] xs:text-[2.05rem] sm:text-[2.45rem] lg:text-[2.95rem] text-balance"
           >
-            <span className="block">Find Out Exactly What&apos;s Holding Your</span>
-            <span className="block grad-text">Postpartum Recovery Back</span>
-          </motion.h1>
-
-          {/* Subheading — eye-catchy */}
-          <motion.p
-            variants={fadeUp}
-            className="mt-3 sm:mt-4 font-display font-medium text-ink-800 text-[1.1rem] xs:text-[1.2rem] sm:text-[1.55rem] lg:text-[1.85rem] leading-snug text-balance"
-          >
-            &amp; What To Do About It In{' '}
-            <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
-              <span className="grad-text-warm font-semibold">Just 25 Minutes</span>
-              <Clock className="w-[1em] h-[1em] text-accent-500" strokeWidth={2.25} />
+            <span className="inline-flex items-center gap-1.5 whitespace-nowrap align-baseline">
+              <span className="grad-text-warm">In Just 25 Mins</span>
+              <Clock className="w-[0.8em] h-[0.8em] text-accent-500" strokeWidth={2.25} />
             </span>
-          </motion.p>
+            , Find Out Exactly What&apos;s Holding Your{' '}
+            <span className="grad-text">Postpartum Recovery Back</span>{' '}
+            &amp; What To Do About It
+          </motion.h1>
 
           {/* Subtext — slightly smaller */}
           <motion.p
@@ -113,6 +117,51 @@ export function Hero() {
             you uncover what&apos;s really holding your recovery back, and know
             exactly <span className="font-semibold text-ink-800">where to focus first</span>.
           </motion.p>
+
+          {/* Mobile-only quick CTA — jumps down to the offer card that sits
+              below the mockup. Hidden on lg, where the offer card is already
+              visible side-by-side with the mockup. Native anchor + the global
+              `scroll-behavior: smooth` (index.css) gives the smooth scroll.
+              Continuous wobble + shine sweep draw the eye (respect reduced
+              motion). Compact size so it reads as a secondary jump-link. */}
+          <motion.a
+            href="#offer-card"
+            initial={false}
+            animate={reduce ? undefined : CTA_ATTENTION_ANIMATE}
+            transition={reduce ? undefined : CTA_ATTENTION_TRANSITION}
+            whileTap={{ scale: 0.96 }}
+            className="group relative mt-6 inline-flex w-full max-w-[15.5rem] items-center justify-center gap-2 overflow-hidden rounded-full px-5 py-2.5 font-display text-[15px] font-semibold tracking-tight text-white shadow-elev transition-shadow duration-500 hover:shadow-glow focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/30 lg:hidden"
+            style={{ background: 'linear-gradient(90deg, #de6976 0%, #CB4A5D 50%, #963543 100%)' }}
+          >
+            {/* Shine — sweeps left→right on a loop */}
+            <motion.span
+              aria-hidden
+              initial={{ x: '-160%' }}
+              animate={reduce ? undefined : { x: ['-160%', '260%'] }}
+              transition={
+                reduce
+                  ? undefined
+                  : { duration: 1.15, ease: 'easeInOut', repeat: Infinity, repeatDelay: 1.7 }
+              }
+              className="pointer-events-none absolute inset-y-0 left-0 w-1/3 skew-x-[-12deg]"
+              style={{
+                background:
+                  'linear-gradient(90deg, transparent 0%, rgba(255,255,255,.5) 50%, transparent 100%)',
+              }}
+            />
+            <span className="relative inline-flex items-center gap-2">
+              Get Instant Access
+              <motion.span
+                aria-hidden
+                animate={reduce ? undefined : { y: [0, 3, 0] }}
+                transition={
+                  reduce ? undefined : { duration: 1.1, ease: 'easeInOut', repeat: Infinity }
+                }
+              >
+                <ArrowDown className="w-4 h-4" strokeWidth={2.5} />
+              </motion.span>
+            </span>
+          </motion.a>
         </motion.div>
 
         {/* ── Mockup + offer band ── */}
@@ -154,9 +203,9 @@ export function Hero() {
               }}
             />
 
-            <div className="relative flex items-start gap-3 mb-4">
+            <div className="relative flex items-start gap-3 mb-5 sm:mb-6">
               <span
-                className="font-script text-brand-200 text-xl sm:text-2xl leading-tight -rotate-3"
+                className="font-script text-brand-200 text-[1.7rem] sm:text-4xl lg:text-[2.75rem] leading-tight -rotate-3"
                 style={{ textShadow: '0 1px 12px rgba(236,158,169,.3)' }}
               >
                 The Postpartum
@@ -166,7 +215,7 @@ export function Hero() {
               <svg
                 aria-hidden
                 viewBox="0 0 80 60"
-                className="w-14 h-12 sm:w-16 sm:h-14 text-brand-200 mt-1 shrink-0"
+                className="w-20 h-16 sm:w-24 sm:h-20 lg:w-28 lg:h-24 text-brand-200 mt-2 shrink-0"
                 fill="none"
               >
                 <path d="M6 10 C 40 6, 64 18, 70 44" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
@@ -189,10 +238,13 @@ export function Hero() {
             </motion.div>
           </motion.div>
 
-          {/* RIGHT — white offer card */}
+          {/* RIGHT — white offer card. `id` is the scroll target for the
+              mobile "Get Instant Access ↓" CTA above the mockup; scroll-mt keeps
+              the "Limited spots" badge clear of the sticky marquee on landing. */}
           <motion.div
+            id="offer-card"
             variants={slideInRight}
-            className="relative rounded-[28px] bg-white border border-ink-100 shadow-elev p-6 sm:p-9 lg:p-10 flex flex-col justify-center"
+            className="relative scroll-mt-24 rounded-[28px] bg-white border border-ink-100 shadow-elev p-6 sm:p-9 lg:p-10 flex flex-col justify-center"
           >
             {/* Limited spots — eye-catchy badge */}
             <div className="inline-flex w-fit items-center gap-2 rounded-full bg-brand-50 border border-brand-200/70 px-3 py-1.5 text-[10.5px] sm:text-[11px] uppercase tracking-[0.18em] font-bold text-brand-700">
