@@ -1,5 +1,5 @@
 import { motion, useReducedMotion } from 'framer-motion'
-import { ShieldCheck, CheckCircle2, Clock, ArrowDown } from 'lucide-react'
+import { ShieldCheck, CheckCircle2, Clock, ArrowDown, GraduationCap, Sprout } from 'lucide-react'
 import { Container } from '@/components/ui/Container'
 import Image from 'next/image'
 import { GradientCTA } from '@/components/ui/GradientCTA'
@@ -28,8 +28,17 @@ const INCLUDED = [
   'Private Postpartum Mothers Community',
   'Monthly Group Coaching Sessions',
   '30-Min Assessment Call with Suvidhi',
-  'UK-trained Clinical Nutritionist',
-  'Postpartum Recovery Specialist',
+]
+
+// 3D gradient credential badge — identical to the Clinician section pills.
+const badge3d =
+  'grid place-items-center rounded-lg text-white shrink-0 shadow-[inset_0_1px_1px_rgba(255,255,255,0.45),0_3px_7px_-2px_rgba(203,74,93,0.5)] [background:linear-gradient(160deg,#de6976,#cb4a5d_60%,#963543)]'
+
+// The last two "included" points render as pills (not checkmarks), fixed the
+// same on every device.
+const CREDENTIALS = [
+  { icon: GraduationCap, label: 'UK-trained Clinical Nutritionist' },
+  { icon: Sprout, label: 'Postpartum Recovery Specialist' },
 ]
 
 export function Hero() {
@@ -286,6 +295,24 @@ export function Hero() {
                 </li>
               ))}
             </ul>
+
+            {/* Credential pills — fixed styling, identical on every device,
+                matching the Clinician section badges. Replaces the last two
+                checkmark points. */}
+            <div className="mt-3 flex flex-wrap gap-2">
+              {CREDENTIALS.map(({ icon: Icon, label }) => (
+                <span
+                  key={label}
+                  className="inline-flex items-center gap-2.5 rounded-full bg-white border border-brand-200/40 shadow-soft px-3.5 py-2 text-[13px] font-semibold text-ink-800"
+                >
+                  <span className={`${badge3d} w-6 h-6`}>
+                    <Icon className="w-3.5 h-3.5" strokeWidth={2.2} />
+                  </span>
+                  {label}
+                </span>
+              ))}
+            </div>
+
             <p className="mt-2.5 text-[12.5px] font-semibold text-ink-500">
               Total value {OFFER.fullPriceLabel}
             </p>
