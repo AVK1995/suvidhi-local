@@ -11,23 +11,24 @@ import {
   Check,
   ChevronDown,
   Clock,
+  Gift,
   Lock,
   Mail,
   MapPin,
   ShieldCheck,
   Sparkles,
   Star,
-  Tag,
   User,
   X,
 } from 'lucide-react'
+import Image from 'next/image'
 import { Container } from '@/components/ui/Container'
 import { Countdown } from '@/components/ui/Countdown'
 import { TopMarquee } from '@/components/sections/TopMarquee'
 import { Footer } from '@/components/sections/Footer'
 import { cn, formatINR } from '@/lib/utils'
 import { fadeUp, stagger } from '@/lib/motion'
-import { OFFER, COUPON } from '@/lib/config'
+import { OFFER, VALUE_STACK, VALUE_STACK_TOTAL } from '@/lib/config'
 import { startCheckout, type CheckoutTracking } from '@/lib/razorpay'
 import { captureUtm, utmPayload, utmQueryString, getFbCookies } from '@/lib/utm'
 import { setMetaAdvancedMatching } from '@/lib/tracking'
@@ -59,7 +60,9 @@ export default function CheckoutPage() {
   const router = useRouter()
   const [form, setForm] = useState<FormState>(initial)
   const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({})
-  const [coupon, setCoupon] = useState<CouponState>({
+  // Coupon UI was removed from checkout; keep the (empty) state so the payment
+  // math and free-order path still resolve to the standard no-discount case.
+  const [coupon] = useState<CouponState>({
     code: '',
     applied: false,
     discountPct: 0,
@@ -76,6 +79,9 @@ export default function CheckoutPage() {
   // Mobile-only accordion state for the order summary. Default: closed so the
   // form is visible immediately on entering the page. Ignored on lg+.
   const [summaryOpen, setSummaryOpen] = useState(false)
+  // Desktop-only dropdown for the itemised offerings. On mobile the list is
+  // always shown inside the summary accordion (this flag is ignored there).
+  const [valueOpen, setValueOpen] = useState(false)
 
   const basePrice = OFFER.price
   const discountAmount = Math.round((basePrice * coupon.discountPct) / 100)
@@ -127,20 +133,6 @@ export default function CheckoutPage() {
     return () => window.clearTimeout(timer)
   }, [form])
 
-  const applyCoupon = () => {
-    const code = coupon.code.trim().toUpperCase()
-    if (!code) return
-    if (code === COUPON.code) {
-      setCoupon({ code, applied: true, discountPct: COUPON.discountPct })
-    } else {
-      setCoupon({ ...coupon, code, applied: false, invalid: true })
-    }
-  }
-
-  const clearCoupon = () => {
-    setCoupon({ code: '', applied: false, discountPct: 0 })
-  }
-
   const validate = (): boolean => {
     const next: Partial<Record<keyof FormState, string>> = {}
     if (!form.firstName.trim()) next.firstName = 'Please share your first name'
@@ -173,7 +165,19 @@ export default function CheckoutPage() {
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    if (!validate()) return
+    if (!validate()) {
+      // Empty / invalid form: the sticky mobile bar sits far below the fields,
+      // so bring the "Your details" form into view and focus the first field
+      // that needs attention instead of silently failing.
+      document
+        .getElementById('checkout-form')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      const firstInvalid = document.querySelector<HTMLElement>(
+        '#checkout-form input',
+      )
+      window.setTimeout(() => firstInvalid?.focus({ preventScroll: true }), 400)
+      return
+    }
     setSubmitting(true)
     setPaymentError(null)
 
@@ -297,18 +301,8 @@ export default function CheckoutPage() {
               variants={fadeUp}
               className="lg:col-span-7 order-2 lg:order-1 space-y-4"
             >
-              {/* Mobile-only coupon card — lives with the form, not in the
-                  order-summary accordion. Desktop renders its own copy inside
-                  the sticky aside. */}
-              <CouponCard
-                coupon={coupon}
-                setCoupon={setCoupon}
-                applyCoupon={applyCoupon}
-                clearCoupon={clearCoupon}
-                className="lg:hidden"
-              />
-
               <form
+                id="checkout-form"
                 onSubmit={onSubmit}
                 noValidate
                 className="relative rounded-3xl bg-white border border-ink-100 shadow-soft p-6 sm:p-8 space-y-5"
@@ -453,6 +447,9 @@ export default function CheckoutPage() {
                   )}
                 </AnimatePresence>
 
+                {/* Inline submit — in the form's natural flow (all screens). On
+                    mobile the always-visible sticky bar at the bottom of the
+                    viewport mirrors it for one-tap access while scrolling. */}
                 <button
                   type="submit"
                   disabled={submitting}
@@ -538,46 +535,46 @@ export default function CheckoutPage() {
               variants={fadeUp}
               className="lg:col-span-5 order-1 lg:order-2 lg:sticky lg:top-6 lg:space-y-4"
             >
-              {/* Mobile-only summary header / toggle */}
+              {/* Mobile-only summary header / toggle — the single dropdown on
+                  mobile (no nested dropdowns). */}
               <button
                 type="button"
                 onClick={() => setSummaryOpen((o) => !o)}
                 aria-expanded={summaryOpen}
                 aria-controls="checkout-order-body"
                 className={cn(
-                  'lg:hidden w-full flex items-center gap-3 rounded-2xl bg-white border border-ink-100 shadow-soft',
+                  'lg:hidden w-full flex items-center justify-between gap-3 rounded-2xl bg-white border border-ink-100 shadow-soft',
                   'px-4 py-3 text-left transition-all duration-300',
                   'hover:border-brand-200 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/20',
                   summaryOpen && 'border-brand-200 shadow-elev',
                 )}
               >
-                <span className="icon-tile w-10 h-10 rounded-xl shrink-0">
-                  <Sparkles className="w-4 h-4" strokeWidth={2} />
-                </span>
-                <span className="flex-1 min-w-0">
-                  <span className="block text-[10.5px] uppercase tracking-[0.18em] font-semibold text-brand-700">
-                    Your order · 1:1 Clarity Call
+                <span className="min-w-0">
+                  <span className="block text-[11px] uppercase tracking-[0.18em] font-semibold text-brand-700">
+                    Order summary
                   </span>
-                  <span className="mt-0.5 flex items-baseline gap-2 leading-tight">
-                    <span className="font-display text-lg font-semibold text-ink-950">
-                      {formatINR(payable)}
-                    </span>
-                    {payable !== basePrice && (
-                      <span className="text-[12px] line-through text-ink-400 font-medium">
-                        {OFFER.fullPriceLabel}
-                      </span>
+                  <span className="block text-[12.5px] text-ink-500 mt-0.5">
+                    {summaryOpen ? 'Tap to hide details' : 'Tap to view details'}
+                  </span>
+                </span>
+                <span className="flex items-center gap-2.5 shrink-0">
+                  <span className="font-display text-xl font-semibold text-brand-600 tabular-nums">
+                    {formatINR(payable)}
+                  </span>
+                  <span
+                    className={cn(
+                      'w-8 h-8 rounded-full border border-ink-200 flex items-center justify-center transition-colors',
+                      summaryOpen && 'bg-brand-50 border-brand-200',
                     )}
-                    <span className="chip-success !py-0 !px-2 !text-[10.5px]">
-                      {summaryOpen ? 'Hide details' : 'View details'}
-                    </span>
+                  >
+                    <ChevronDown
+                      className={cn(
+                        'w-4 h-4 text-ink-500 transition-transform duration-300',
+                        summaryOpen && 'rotate-180 text-brand-700',
+                      )}
+                    />
                   </span>
                 </span>
-                <ChevronDown
-                  className={cn(
-                    'w-5 h-5 text-ink-500 transition-transform duration-300 shrink-0',
-                    summaryOpen && 'rotate-180',
-                  )}
-                />
               </button>
 
               {/* Body — collapsible on mobile via CSS grid trick; always on desktop */}
@@ -593,16 +590,6 @@ export default function CheckoutPage() {
               >
                 <div className="overflow-hidden lg:overflow-visible">
                   <div className="lg:space-y-4">
-                    {/* Coupon card — desktop only here (mobile copy lives
-                        above the form). */}
-                    <CouponCard
-                      coupon={coupon}
-                      setCoupon={setCoupon}
-                      applyCoupon={applyCoupon}
-                      clearCoupon={clearCoupon}
-                      className="hidden lg:block"
-                    />
-
                     {/* Order summary */}
               <div className="relative rounded-[28px] overflow-hidden shadow-elev border border-white/60">
                 <div
@@ -627,43 +614,95 @@ export default function CheckoutPage() {
                     Your order
                   </div>
 
-                  <div className="mt-5 flex items-start gap-4">
-                    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center shrink-0">
-                      <Calendar className="w-6 h-6 text-brand-200" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-display text-lg sm:text-xl font-semibold leading-tight">
-                        1:1 Clarity Call
-                      </div>
-                      <div className="text-sm text-cream/70 mt-0.5">
-                        30-min clinical consultation · UK-trained nutritionist
-                      </div>
-                    </div>
+                  {/* Everything-you-get product collage */}
+                  <div className="mt-5 relative w-full aspect-[16/9] rounded-2xl overflow-hidden border border-white/10 bg-white/5">
+                    <Image
+                      src="/Value_Stack_Collage/Value_Stack_Collage1.1.png"
+                      alt="Everything you get — the assessment, 4 clinical audits and 3 bonuses"
+                      fill
+                      sizes="(max-width: 1024px) 100vw, 420px"
+                      className="object-cover"
+                    />
                   </div>
 
-                  <div className="my-5 h-px bg-white/10" />
+                  {/* Desktop-only dropdown toggle for the itemised offerings.
+                      Hidden on mobile, where the list is always shown inside the
+                      summary accordion (per request: mobile untouched). */}
+                  <button
+                    type="button"
+                    onClick={() => setValueOpen((o) => !o)}
+                    aria-expanded={valueOpen}
+                    aria-controls="checkout-value-items"
+                    className="mt-5 hidden lg:flex w-full items-center gap-3 rounded-2xl bg-white/[0.06] border border-white/12 px-4 py-3 text-left focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/20"
+                  >
+                    <span className="w-8 h-8 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center shrink-0">
+                      <Sparkles className="w-4 h-4 text-brand-200" />
+                    </span>
+                    <span className="flex-1 min-w-0">
+                      <span className="block text-[13px] font-semibold leading-tight">
+                        What&apos;s included
+                      </span>
+                      <span className="block text-[11.5px] text-cream/65 mt-0.5">
+                        {VALUE_STACK.length} items · {formatINR(VALUE_STACK_TOTAL)} value
+                      </span>
+                    </span>
+                    <ChevronDown
+                      className={cn(
+                        'w-5 h-5 text-cream/70 transition-transform duration-300 shrink-0',
+                        valueOpen && 'rotate-180',
+                      )}
+                    />
+                  </button>
 
-                  <div className="space-y-2.5 text-sm">
-                    <div className="flex items-center justify-between">
-                      <span className="text-cream/80">Subtotal</span>
-                      <span className="text-cream/85 font-medium">
-                        {formatINR(basePrice)}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-cream/70">Real value</span>
-                      <span className="text-cream/70 line-through">
-                        {OFFER.fullPriceLabel}
-                      </span>
-                    </div>
-                    {coupon.applied && discountAmount > 0 && (
-                      <div className="flex items-center justify-between text-brand-200">
-                        <span>Coupon · {coupon.code}</span>
-                        <span className="font-semibold">
-                          - {formatINR(discountAmount)}
+                  {/* Itemised offerings — every item with its value. Nothing is
+                      dropped; only the grand total is struck through. Mobile:
+                      always expanded. Desktop: collapses under the toggle above. */}
+                  <div
+                    id="checkout-value-items"
+                    className={cn(
+                      'grid grid-rows-[1fr] opacity-100 transition-[grid-template-rows,opacity] duration-500 ease-out',
+                      valueOpen
+                        ? 'lg:grid-rows-[1fr] lg:opacity-100'
+                        : 'lg:grid-rows-[0fr] lg:opacity-0',
+                    )}
+                  >
+                    <div className="overflow-hidden">
+                      <ul className="mt-5 lg:mt-3 divide-y divide-white/10">
+                        {VALUE_STACK.map((item) => (
+                          <li key={item.label} className="flex items-center gap-3 py-3">
+                            <span className="inline-flex w-7 h-7 rounded-full bg-white/10 border border-white/15 items-center justify-center shrink-0">
+                              {item.kind === 'bonus' ? (
+                                <Gift className="w-3.5 h-3.5 text-brand-200" strokeWidth={2.2} />
+                              ) : (
+                                <Check className="w-3.5 h-3.5 text-brand-200" strokeWidth={2.5} />
+                              )}
+                            </span>
+                            <span className="flex-1 min-w-0 text-[13.5px] text-cream/90 leading-snug">
+                              {item.label}
+                              {item.kind === 'bonus' && (
+                                <span className="ml-2 align-middle text-[9.5px] uppercase tracking-[0.16em] font-semibold text-brand-200">
+                                  Bonus
+                                </span>
+                              )}
+                            </span>
+                            <span className="shrink-0 text-[13.5px] font-semibold text-cream tabular-nums">
+                              {formatINR(item.amount)}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+
+                      {/* Total value — struck through against the ₹497 you pay */}
+                      <div className="mt-4 pt-4 border-t-2 border-dashed border-white/20 flex items-center justify-between gap-4">
+                        <span className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] font-semibold text-cream/70">
+                          <Sparkles className="w-3.5 h-3.5 text-brand-200" />
+                          Total value
+                        </span>
+                        <span className="font-display text-2xl font-semibold text-cream/50 line-through tabular-nums">
+                          {formatINR(VALUE_STACK_TOTAL)}
                         </span>
                       </div>
-                    )}
+                    </div>
                   </div>
 
                   <div className="my-5 h-px bg-white/10" />
@@ -673,12 +712,12 @@ export default function CheckoutPage() {
                       <div className="text-[11px] uppercase tracking-[0.2em] font-semibold text-cream/60">
                         You pay today
                       </div>
-                      <div className="font-display text-4xl sm:text-5xl font-semibold leading-none mt-2">
+                      <div className="font-display text-4xl sm:text-5xl font-semibold leading-none mt-2 tabular-nums">
                         {payable === 0 ? '₹0' : formatINR(payable)}
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="inline-flex items-center gap-1 text-brand-300 text-[12px] font-semibold">
+                      <div className="inline-flex items-center gap-1">
                         {[0, 1, 2, 3, 4].map((i) => (
                           <Star
                             key={i}
@@ -692,6 +731,7 @@ export default function CheckoutPage() {
                     </div>
                   </div>
 
+                  {/* Urgency */}
                   <div className="mt-5 rounded-2xl bg-white/8 border border-white/12 p-4 backdrop-blur-md">
                     <div className="flex items-center justify-center gap-2 text-[11px] uppercase tracking-[0.2em] font-semibold text-cream/65 mb-3">
                       <Clock className="w-3.5 h-3.5 text-brand-300" /> Offer ends in
@@ -699,6 +739,7 @@ export default function CheckoutPage() {
                     <Countdown minutes={15} variant="dark" />
                   </div>
 
+                  {/* Trust badges */}
                   <div className="mt-5 grid grid-cols-2 gap-3">
                     <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/8 border border-white/10">
                       <ShieldCheck className="w-4 h-4 text-brand-200" />
@@ -720,6 +761,52 @@ export default function CheckoutPage() {
       </main>
 
       <Footer hideCTA />
+
+      {/* Spacer so the fixed mobile pay bar never permanently covers the
+          footer's last row. Mobile only. */}
+      <div aria-hidden className="h-20 lg:hidden" />
+
+      {/* Mobile sticky pay bar — always visible from the first screen (no
+          scroll reveal). Submits the checkout form via the `form` attribute,
+          so it works even though it lives outside the <form>. Price comes from
+          formatINR(payable) → OFFER.price (env), same as every other CTA. */}
+      <div className="fixed inset-x-0 bottom-0 z-50 lg:hidden pb-safe border-t border-ink-100 bg-white/95 backdrop-blur-xl shadow-[0_-8px_30px_-12px_rgba(57,18,24,0.18)]">
+        <div className="px-4 py-3">
+          <button
+            type="submit"
+            form="checkout-form"
+            disabled={submitting}
+            className={cn(
+              'group relative w-full inline-flex items-center justify-center gap-2.5',
+              'rounded-full font-semibold tracking-tight whitespace-nowrap',
+              'bg-brand-600 hover:bg-brand-700 text-white',
+              'shadow-elev hover:shadow-glow transition-all duration-500 ease-out',
+              'px-6 py-3.5 text-base',
+              'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/30',
+              'overflow-hidden disabled:opacity-70 disabled:cursor-not-allowed',
+            )}
+          >
+            {submitting ? (
+              <>
+                <span className="relative w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                <span className="relative">
+                  {isFreeAfterCoupon ? 'Confirming…' : 'Opening secure payment…'}
+                </span>
+              </>
+            ) : isFreeAfterCoupon ? (
+              <>
+                <Calendar className="w-[18px] h-[18px]" />
+                <span className="relative">Continue to book my slot · Free</span>
+              </>
+            ) : (
+              <>
+                <Lock className="w-[18px] h-[18px]" />
+                <span className="relative">Pay {formatINR(payable)} securely</span>
+              </>
+            )}
+          </button>
+        </div>
+      </div>
     </div>
   )
 }
@@ -780,106 +867,6 @@ function Field({
           </motion.p>
         )}
       </AnimatePresence>
-    </div>
-  )
-}
-
-function CouponCard({
-  coupon,
-  setCoupon,
-  applyCoupon,
-  clearCoupon,
-  className,
-}: {
-  coupon: CouponState
-  setCoupon: (c: CouponState) => void
-  applyCoupon: () => void
-  clearCoupon: () => void
-  className?: string
-}) {
-  return (
-    <div
-      className={cn(
-        'relative rounded-3xl bg-white border border-ink-100 shadow-soft p-5 sm:p-6',
-        className,
-      )}
-    >
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2.5">
-          <span className="icon-tile w-10 h-10 rounded-xl">
-            <Tag className="w-4 h-4" strokeWidth={2} />
-          </span>
-          <div>
-            <div className="font-semibold text-ink-950 text-[14.5px] leading-tight">
-              Have a coupon?
-            </div>
-            <div className="text-[12px] text-ink-600">
-              Apply it before paying
-            </div>
-          </div>
-        </div>
-        {coupon.applied && (
-          <button
-            type="button"
-            onClick={clearCoupon}
-            className="text-[12px] font-semibold text-ink-500 hover:text-brand-700 transition-colors inline-flex items-center gap-1"
-          >
-            <X className="w-3.5 h-3.5" /> Remove
-          </button>
-        )}
-      </div>
-
-      {coupon.applied ? (
-        <div className="mt-4 flex items-center justify-between gap-3 rounded-2xl border border-brand-200/60 surface-tint p-3.5">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <span className="w-8 h-8 rounded-full bg-brand-600 text-white flex items-center justify-center shrink-0">
-              <Check className="w-4 h-4" strokeWidth={3} />
-            </span>
-            <div className="min-w-0">
-              <div className="font-semibold text-ink-950 text-[14px] truncate">
-                {coupon.code}
-              </div>
-              <div className="text-[12px] text-brand-700 font-semibold">
-                {coupon.discountPct}% discount applied
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="mt-4 flex flex-col sm:flex-row gap-2.5">
-          <input
-            type="text"
-            placeholder="Enter coupon code"
-            value={coupon.code}
-            onChange={(e) =>
-              setCoupon({
-                code: e.target.value.toUpperCase(),
-                applied: false,
-                discountPct: 0,
-                invalid: false,
-              })
-            }
-            className={cn(
-              'input flex-1 !py-3 uppercase tracking-wider',
-              coupon.invalid && '!border-brand-400 !ring-2 !ring-brand-200',
-            )}
-          />
-          <button
-            type="button"
-            onClick={applyCoupon}
-            disabled={!coupon.code.trim()}
-            className="px-5 py-3 rounded-2xl bg-ink-900 text-white font-semibold text-sm hover:bg-ink-950 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            Apply
-          </button>
-        </div>
-      )}
-      {coupon.invalid && !coupon.applied && (
-        <p className="mt-2 text-[12.5px] text-brand-700 font-medium">
-          That code isn't valid. Try again, or skip — the offer is already a
-          great deal.
-        </p>
-      )}
     </div>
   )
 }
