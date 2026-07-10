@@ -232,14 +232,20 @@ export default function BookACallPage() {
               transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
               className="relative mx-auto max-w-2xl"
             >
-              <motion.div
+              <motion.button
+                type="button"
+                onClick={() =>
+                  document
+                    .getElementById('calendar')
+                    ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                }
                 animate={{ scale: [1, 1.025, 1], y: [0, -2, 0] }}
                 transition={{
                   duration: 2.4,
                   repeat: Infinity,
                   ease: 'easeInOut',
                 }}
-                className="relative rounded-full overflow-hidden shadow-elev"
+                className="relative w-full cursor-pointer rounded-full overflow-hidden shadow-elev focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/30"
               >
                 <div
                   aria-hidden
@@ -304,7 +310,7 @@ export default function BookACallPage() {
                     <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-brand-200" />
                   </motion.span>
                 </div>
-              </motion.div>
+              </motion.button>
               <p className="mt-5 sm:mt-6 text-center text-ink-700 text-[15.5px] sm:text-[16.5px] leading-relaxed max-w-xl mx-auto text-pretty">
                 During this private one-on-one conversation, Suvidhi will help you
                 understand exactly where your body is — and what it needs next.
