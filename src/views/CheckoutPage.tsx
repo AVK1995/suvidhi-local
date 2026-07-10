@@ -79,9 +79,10 @@ export default function CheckoutPage() {
   // Mobile-only accordion state for the order summary. Default: closed so the
   // form is visible immediately on entering the page. Ignored on lg+.
   const [summaryOpen, setSummaryOpen] = useState(false)
-  // Desktop-only dropdown for the itemised offerings. On mobile the list is
-  // always shown inside the summary accordion (this flag is ignored there).
-  const [valueOpen, setValueOpen] = useState(false)
+  // Desktop-only dropdown for the itemised offerings — open on load; the user
+  // can collapse it. On mobile the list is always shown inside the summary
+  // accordion (this flag is ignored there).
+  const [valueOpen, setValueOpen] = useState(true)
 
   const basePrice = OFFER.price
   const discountAmount = Math.round((basePrice * coupon.discountPct) / 100)
