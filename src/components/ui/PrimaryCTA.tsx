@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { OFFER } from '@/lib/config'
 import { utmQueryString } from '@/lib/utm'
+import { trackCheckoutCtaClick } from '@/lib/metaClient'
 import { CTA_ATTENTION_ANIMATE, CTA_ATTENTION_TRANSITION } from '@/lib/motion'
 
 interface PrimaryCTAProps {
@@ -39,7 +40,11 @@ export function PrimaryCTA({
 
   return (
     <motion.button
-      onClick={() => router.push(to + utmQueryString())}
+      onClick={() => {
+        // Meta AddToCart + GA4 add_to_cart (once per browser, /checkout only).
+        trackCheckoutCtaClick(to)
+        router.push(to + utmQueryString())
+      }}
       onHoverStart={() => setHovered(true)}
       onHoverEnd={() => setHovered(false)}
       animate={reduce ? undefined : CTA_ATTENTION_ANIMATE}

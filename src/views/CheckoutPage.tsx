@@ -32,6 +32,8 @@ import { OFFER, VALUE_STACK, VALUE_STACK_TOTAL } from '@/lib/config'
 import { startCheckout, type CheckoutTracking } from '@/lib/razorpay'
 import { captureUtm, utmPayload, utmQueryString, getFbCookies } from '@/lib/utm'
 import { setMetaAdvancedMatching } from '@/lib/tracking'
+import { trackGa4EventOnce } from '@/lib/ga4'
+import { fireInitiateCheckoutOnce } from '@/lib/metaClient'
 
 interface FormState {
   firstName: string
@@ -166,6 +168,14 @@ export default function CheckoutPage() {
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault()
+
+    // GA4 `initiate_checkout` — fires at the TOP, BEFORE validation, because the
+    // signal we want is "did they attempt to pay". A half-filled form that
+    // bounces off validation still counts. (Deliberately different from Meta's
+    // InitiateCheckout below, which only fires on a VALID form — the two events
+    // measure different things and their counts will not match.)
+    trackGa4EventOnce('initiate_checkout')
+
     if (!validate()) {
       // Empty / invalid form: the sticky mobile bar sits far below the fields,
       // so bring the "Your details" form into view and focus the first field
@@ -232,8 +242,22 @@ export default function CheckoutPage() {
       return
     }
 
-    // Razorpay: server creates order → modal opens → signature verified
-    // server-side on success, where the CAPI `sales` event + Pabbly row fire.
+    // Meta `InitiateCheckout` — PAID path only, form already validated, fired
+    // immediately before create-order. Carries the full 11 matching signals.
+    // Deduped per email per browser. Never blocks payment.
+    await fireInitiateCheckoutOnce({
+      firstName: form.firstName,
+      lastName: form.lastName,
+      email: form.email,
+      phone: form.phone,
+      city: form.city,
+      countryCode: country,
+      amount: payable,
+    })
+
+    // Razorpay: create-order packs the webhook notes → modal opens → signature
+    // verified for UX. Pabbly + the CAPI `sales` event now fire from
+    // /api/razorpay/webhook (server-to-server), not from the browser round-trip.
     await startCheckout({
       amount: payable,
       receipt: orderId,
@@ -241,13 +265,6 @@ export default function CheckoutPage() {
         name: fullName,
         email: form.email,
         phone: form.phone,
-      },
-      notes: {
-        order_id: orderId,
-        coupon: coupon.applied ? coupon.code : '',
-        ...Object.fromEntries(
-          Object.entries(utmPayload()).map(([k, v]) => [k, String(v ?? '')]),
-        ),
       },
       tracking,
       onSuccess: (r) => {

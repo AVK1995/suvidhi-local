@@ -4,6 +4,7 @@ import { ArrowRight } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { utmQueryString } from '@/lib/utm'
+import { trackCheckoutCtaClick } from '@/lib/metaClient'
 import { CTA_ATTENTION_ANIMATE, CTA_ATTENTION_TRANSITION } from '@/lib/motion'
 
 interface GradientCTAProps {
@@ -25,7 +26,11 @@ export function GradientCTA({
   const [hovered, setHovered] = useState(false)
   return (
     <motion.button
-      onClick={() => router.push(to + utmQueryString())}
+      onClick={() => {
+        // Meta AddToCart + GA4 add_to_cart (once per browser, /checkout only).
+        trackCheckoutCtaClick(to)
+        router.push(to + utmQueryString())
+      }}
       onHoverStart={() => setHovered(true)}
       onHoverEnd={() => setHovered(false)}
       animate={reduce ? undefined : CTA_ATTENTION_ANIMATE}

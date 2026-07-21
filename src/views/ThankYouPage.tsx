@@ -27,6 +27,7 @@ import { fadeUp, scaleIn, stagger, VIEWPORT_ONCE } from '@/lib/motion'
 import { BRAND, WHATSAPP } from '@/lib/config'
 import { appendUtm } from '@/lib/utm'
 import { reapplyMamFromCookie } from '@/lib/tracking'
+import { trackGa4EventOnce } from '@/lib/ga4'
 
 interface ThankYouState {
   name?: string
@@ -240,10 +241,12 @@ export default function ThankYouPage() {
                 loop on un-hover. Halo glow loops behind. Hover shine sweeps
                 left → right once per enter, snaps back instantly on leave. */}
             <div className="flex justify-center">
+              {/* onClick fires GA4 `join_whatsapp` — once per browser. */}
               <motion.a
                 href={communityUrl || '#'}
                 target={communityUrl ? '_blank' : undefined}
                 rel={communityUrl ? 'noopener noreferrer' : undefined}
+                onClick={() => trackGa4EventOnce('join_whatsapp')}
                 initial={{ opacity: 0 }}
                 animate={{
                   opacity: 1,

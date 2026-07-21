@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useMagnetic, useNearPageBottom, usePastHero } from '@/lib/hooks'
 import { OFFER } from '@/lib/config'
 import { utmQueryString } from '@/lib/utm'
+import { trackCheckoutCtaClick } from '@/lib/metaClient'
 import { CTA_ATTENTION_ANIMATE, CTA_ATTENTION_TRANSITION } from '@/lib/motion'
 
 export function StickyCTA() {
@@ -77,7 +78,11 @@ export function StickyCTA() {
                 {/* Right — CTA */}
                 <motion.button
                   ref={btnRef}
-                  onClick={() => router.push('/checkout' + utmQueryString())}
+                  onClick={() => {
+                    // Meta AddToCart + GA4 add_to_cart (once per browser).
+                    trackCheckoutCtaClick('/checkout')
+                    router.push('/checkout' + utmQueryString())
+                  }}
                   whileTap={{ scale: 0.97 }}
                   animate={reduce ? undefined : CTA_ATTENTION_ANIMATE}
                   transition={reduce ? undefined : CTA_ATTENTION_TRANSITION}

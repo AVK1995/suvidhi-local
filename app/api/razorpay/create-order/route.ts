@@ -1,4 +1,5 @@
 import Razorpay from 'razorpay'
+import { getClientContext } from '@/lib/server/requestContext'
 
 // Razorpay's Node SDK is server-only — keep this handler on the Node runtime
 // and never statically cached.
@@ -20,6 +21,28 @@ function json(status: number, body: unknown): Response {
     status,
     headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
   })
+}
+
+/** Razorpay caps notes at 15 keys / 256 chars per value. Never send more. */
+function trunc(v: unknown, max = 256): string {
+  const s = typeof v === 'string' ? v : ''
+  return s.length > max ? s.slice(0, max) : s
+}
+
+interface CustomerIn {
+  firstName?: string
+  lastName?: string
+  email?: string
+  phone?: string
+  city?: string
+  countryCode?: string
+}
+interface UtmIn {
+  utm_source?: string
+  utm_medium?: string
+  utm_campaign?: string
+  utm_content?: string
+  utm_term?: string
 }
 
 export async function POST(req: Request): Promise<Response> {
@@ -47,12 +70,60 @@ export async function POST(req: Request): Promise<Response> {
     })
   }
 
+  // ── Pack everything the webhook will need into order.notes ──────────────
+  // Razorpay copies order notes onto the payment entity, so the webhook (which
+  // has no browser context at all) reads identity + attribution from here.
+  // Budget: 15 keys / 256 chars each → customer + UTM go in JSON blobs.
+  const customer = (body.customer ?? {}) as CustomerIn
+  const utm = (body.utm ?? {}) as UtmIn
+  const ctx = getClientContext(req)
+
+  // Canonical checkout URL — never window.location.href: real URLs blow past
+  // 256 chars with the query string. UTMs are preserved in the `utm` note, and
+  // event_source_url is metadata (not a matching signal), so no data is lost.
+  let esu = ''
+  try {
+    esu = `${new URL(req.url).origin}/checkout`
+  } catch {
+    esu = ''
+  }
+
+  const notes: Record<string, string> = {
+    kind: 'client_funnel',
+    cust: trunc(
+      JSON.stringify({
+        fn: customer.firstName ?? '',
+        ln: customer.lastName ?? '',
+        em: customer.email ?? '',
+        ph: customer.phone ?? '',
+        ct: customer.city ?? '',
+        co: customer.countryCode ?? '',
+      }),
+    ),
+    utm: trunc(
+      JSON.stringify({
+        s: utm.utm_source ?? '',
+        m: utm.utm_medium ?? '',
+        c: utm.utm_campaign ?? '',
+        n: utm.utm_content ?? '',
+        t: utm.utm_term ?? '',
+      }),
+    ),
+    clid: trunc(body.fbclid),
+    fbc: trunc(ctx.fbc),
+    fbp: trunc(ctx.fbp),
+    ip: trunc(ctx.clientIp, 45),
+    ua: trunc(ctx.clientUserAgent),
+    esu: trunc(esu),
+    tst: body.isTest === true ? '1' : '0',
+  }
+
   try {
     const order = await rp.orders.create({
       amount: Math.round(amountRupees * 100), // paise
       currency: (body.currency as string) ?? 'INR',
       receipt: body.receipt as string | undefined,
-      notes: (body.notes ?? undefined) as Record<string, string> | undefined,
+      notes,
     })
     return json(200, order)
   } catch (e) {

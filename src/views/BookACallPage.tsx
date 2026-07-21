@@ -36,6 +36,7 @@ import { cn } from '@/lib/utils'
 import { CALENDLY } from '@/lib/config'
 import { ASSETS } from '@/lib/assets'
 import { loadUtm, utmQueryString } from '@/lib/utm'
+import { trackGa4EventOnce } from '@/lib/ga4'
 
 interface CheckoutState {
   name?: string
@@ -119,14 +120,26 @@ export default function BookACallPage() {
     window.scrollTo({ top: 0 })
 
     const onMessage = (ev: MessageEvent) => {
+      // Booking happens inside the Calendly iframe — there's no button of ours
+      // to attach to, so we listen for the embed's postMessage. Origin-checked
+      // so any other frame on the page can't spoof a booking.
+      let host = ''
+      try {
+        host = new URL(ev.origin).hostname
+      } catch {
+        return
+      }
+      if (host !== 'calendly.com' && !host.endsWith('.calendly.com')) return
+
       const data = ev.data
       if (!data || typeof data !== 'object') return
       const eventName = (data as { event?: string }).event
       if (eventName === 'calendly.event_scheduled') {
-        // No browser Meta event fires here (only PageView is allowed). The call
-        // booking is reflected in the CRM Sheet, where the sales team marks the
-        // lead "qualified" → the Apps Script fires the downstream QualifiedLead
-        // CAPI event.
+        // GA4 only — fires on an ACTUAL booking, once per browser. No browser
+        // Meta event fires here: the downstream QualifiedLead CAPI event is
+        // fired by the CRM Apps Script when the sales team marks the lead
+        // qualified in the Sheet.
+        trackGa4EventOnce('book_a_call')
         setFunnelState(checkoutState)
         router.push('/thank-you' + utmQueryString())
       }

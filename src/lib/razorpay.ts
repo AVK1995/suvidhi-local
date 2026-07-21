@@ -26,7 +26,7 @@
  *   / Express) and the client code does not change.
  */
 
-import { BRAND, OFFER, RAZORPAY } from './config'
+import { OFFER, RAZORPAY } from './config'
 
 const CHECKOUT_SCRIPT = 'https://checkout.razorpay.com/v1/checkout.js'
 
@@ -77,10 +77,13 @@ export interface CheckoutInput {
   /** Amount in INR major units. 1 = ₹1. */
   amount: number
   customer?: { name?: string; email?: string; phone?: string }
-  notes?: Record<string, string>
   /** Internal receipt / reference (max 40 chars per Razorpay). */
   receipt?: string
-  /** Forwarded to the verify route for server-side CAPI + Pabbly firing. */
+  /**
+   * Forwarded to CREATE-ORDER, which packs it into the Razorpay order notes.
+   * Razorpay copies order notes onto the payment entity, so the webhook reads
+   * identity + attribution from there (it has no browser context of its own).
+   */
   tracking?: CheckoutTracking
   onSuccess: (r: PaymentSuccess) => void | Promise<void>
   onFailure?: (e: PaymentError) => void
@@ -99,11 +102,11 @@ export async function startCheckout(input: CheckoutInput): Promise<void> {
     return
   }
 
-  // 1) Server creates the Razorpay Order
+  // 1) Server creates the Razorpay Order (and packs the webhook notes)
   const orderResult = await createOrder({
     amount: input.amount,
     receipt: input.receipt,
-    notes: input.notes,
+    tracking: input.tracking,
   })
   if (!orderResult.ok) {
     input.onFailure?.(orderResult.error)
@@ -143,11 +146,10 @@ export async function startCheckout(input: CheckoutInput): Promise<void> {
         email: input.customer?.email ?? '',
         contact: input.customer?.phone ?? '',
       },
-      notes: {
-        product: OFFER.name,
-        brand: BRAND.name,
-        ...(input.notes ?? {}),
-      },
+      // NOTE: deliberately no checkout-level `notes` here. The ORDER notes set
+      // by create-order (which carry the `kind: client_funnel` sentinel the
+      // webhook gates on) must be the ones that propagate to the payment
+      // entity — passing notes here risks overwriting them.
       theme: { color: RAZORPAY.themeColor },
       retry: { enabled: true, max_count: 3 },
       remember_customer: false,
@@ -158,9 +160,8 @@ export async function startCheckout(input: CheckoutInput): Promise<void> {
       },
       handler: async (response: PaymentSuccess) => {
         // 4) Verify signature server-side before trusting success. The same
-        //    call forwards tracking so the server fires CAPI + Pabbly on a
-        //    verified payment.
-        const ok = await verifyPayment(response, input.tracking)
+        //    This is a UX gate only — the webhook owns the tracking.
+        const ok = await verifyPayment(response)
         if (!ok) {
           input.onFailure?.({
             message:
@@ -203,8 +204,9 @@ type CreateOrderResult =
 async function createOrder(input: {
   amount: number
   receipt?: string
-  notes?: Record<string, string>
+  tracking?: CheckoutTracking
 }): Promise<CreateOrderResult> {
+  const t = input.tracking
   try {
     const r = await fetch('/api/razorpay/create-order', {
       method: 'POST',
@@ -213,7 +215,25 @@ async function createOrder(input: {
         amount: input.amount,
         currency: OFFER.currency,
         receipt: input.receipt,
-        notes: input.notes,
+        // Structured — the server builds the order notes from this (and reads
+        // _fbc/_fbp/IP/UA itself, which the browser can't be trusted for).
+        customer: {
+          firstName: t?.firstName ?? '',
+          lastName: t?.lastName ?? '',
+          email: t?.email ?? '',
+          phone: t?.phone ?? '',
+          city: t?.city ?? '',
+          countryCode: t?.countryCode ?? '',
+        },
+        utm: {
+          utm_source: t?.utm_source ?? '',
+          utm_medium: t?.utm_medium ?? '',
+          utm_campaign: t?.utm_campaign ?? '',
+          utm_content: t?.utm_content ?? '',
+          utm_term: t?.utm_term ?? '',
+        },
+        fbclid: t?.fbclid ?? '',
+        isTest: t?.isTest === true,
       }),
     })
     const data = (await r.json()) as Record<string, unknown>
@@ -260,15 +280,17 @@ async function createOrder(input: {
   }
 }
 
-async function verifyPayment(
-  input: PaymentSuccess,
-  tracking?: CheckoutTracking,
-): Promise<boolean> {
+/**
+ * Slim signature check — UX gate only. Tracking (Pabbly + Meta CAPI) is fired
+ * by /api/razorpay/webhook, server-to-server, so it survives UPI-app payers who
+ * never return to the tab.
+ */
+async function verifyPayment(input: PaymentSuccess): Promise<boolean> {
   try {
     const r = await fetch('/api/razorpay/verify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...input, tracking }),
+      body: JSON.stringify(input),
     })
     const data = (await r.json()) as { valid?: boolean }
     return !!data.valid
