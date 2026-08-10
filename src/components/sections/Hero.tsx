@@ -1,5 +1,5 @@
 import { motion, useReducedMotion } from 'framer-motion'
-import { ShieldCheck, CheckCircle2, Clock, ArrowDown, GraduationCap, Sprout } from 'lucide-react'
+import { ShieldCheck, CheckCircle2, ArrowDown, GraduationCap, Sprout } from 'lucide-react'
 import { Container } from '@/components/ui/Container'
 import Image from 'next/image'
 import { GradientCTA } from '@/components/ui/GradientCTA'
@@ -14,12 +14,15 @@ import {
 } from '@/lib/motion'
 import { OFFER } from '@/lib/config'
 
+// Conditions the audience is fighting alongside weight loss — rendered as
+// pills *below* the sub-copy (see the title block), the way the reference
+// layout stacks headline → sub-headline → proof line → pills.
 const PAIN_POINTS = [
+  'PCOS / PCOD',
+  'Thyroid Issues',
+  'Insulin Resistance',
+  'Excessive Hair Fall',
   'Low Energy',
-  'Hair Fall',
-  'Brain Fog',
-  'Postpartum Belly',
-  'Mood Swings',
 ]
 
 const INCLUDED = [
@@ -84,7 +87,52 @@ export function Hero() {
             Recovered
           </motion.span>
 
-          {/* Pain-point pills */}
+          {/* Title — outcome-led headline. Line 1 sits in a tinted box, the
+              "Up To 40%" claim carries the brand gradient. Each line is a
+              block so the three-line stack holds on desktop; long lines still
+              wrap naturally on narrow phones. */}
+          <motion.h1
+            variants={fadeUp}
+            className="font-display font-semibold leading-[1.16] tracking-tight text-ink-950 mt-5 text-[1.8rem] xs:text-[2.05rem] sm:text-[2.45rem] lg:text-[2.95rem] text-balance"
+          >
+            <span className="block">
+              <span className="inline-block rounded-2xl bg-brand-50 border border-brand-200/70 px-3 py-0.5 sm:px-4 sm:py-1">
+                <span className="grad-text">Lose 5-15 Kilos</span>
+              </span>
+            </span>
+            <span className="block mt-1.5 sm:mt-2">Reduce Mummy Belly</span>
+            <span className="block">
+              &amp; Diastasis Recti By{' '}
+              <span className="grad-text">Up To 40%</span>
+            </span>
+          </motion.h1>
+
+          {/* Sub-headline — the mechanism, one step down from the H1 */}
+          <motion.p
+            variants={fadeUp}
+            className="mt-4 font-display font-semibold text-brand-700 text-[15px] sm:text-[17px] lg:text-[19px] leading-snug max-w-3xl mx-auto text-balance"
+          >
+            Through The Postpartum Restore Blueprint designed to help postpartum
+            women recover, rebuild &amp; lose weight sustainably.
+          </motion.p>
+
+          {/* Proof line — leads into the condition pills below */}
+          <motion.p
+            variants={fadeUp}
+            className="mt-3.5 text-ink-600 text-[13.5px] sm:text-[15px] leading-relaxed sm:leading-loose max-w-3xl mx-auto text-pretty"
+          >
+            <span className="font-semibold text-ink-900">
+              200+ postpartum moms globally
+            </span>{' '}
+            have achieved{' '}
+            {/* inline-block keeps the tinted box from splitting across lines */}
+            <span className="inline-block rounded-md bg-brand-50 border border-brand-200/70 px-1.5 py-0.5 font-semibold text-brand-700">
+              lasting weight loss
+            </span>{' '}
+            while overcoming challenges such as:
+          </motion.p>
+
+          {/* Condition pills */}
           <motion.div
             variants={fadeUp}
             className="mt-4 flex flex-wrap justify-center gap-2 sm:gap-2.5"
@@ -102,30 +150,6 @@ export function Hero() {
               </span>
             ))}
           </motion.div>
-
-          {/* Title — single headline, two highlighted phrases */}
-          <motion.h1
-            variants={fadeUp}
-            className="font-display font-semibold leading-[1.14] tracking-tight text-ink-950 mt-5 text-[1.8rem] xs:text-[2.05rem] sm:text-[2.45rem] lg:text-[2.95rem] text-balance"
-          >
-            <span className="inline-flex items-center gap-1.5 whitespace-nowrap align-baseline">
-              <span className="grad-text-warm">In Just 25 Mins</span>
-              <Clock className="w-[0.8em] h-[0.8em] text-accent-500" strokeWidth={2.25} />
-            </span>
-            , Find Out Exactly What&apos;s Holding Your{' '}
-            <span className="grad-text">Postpartum Recovery Back</span>{' '}
-            &amp; What To Do About It
-          </motion.h1>
-
-          {/* Subtext — slightly smaller */}
-          <motion.p
-            variants={fadeUp}
-            className="mt-4 text-ink-600 text-[13.5px] sm:text-[15px] leading-relaxed max-w-2xl mx-auto text-pretty"
-          >
-            The Postpartum Restore™ is a 25-minute guided assessment that helps
-            you uncover what&apos;s really holding your recovery back, and know
-            exactly <span className="font-semibold text-ink-800">where to focus first</span>.
-          </motion.p>
 
           {/* Mobile-only quick CTA — jumps down to the offer card that sits
               below the mockup. Hidden on lg, where the offer card is already
