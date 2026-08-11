@@ -18,7 +18,6 @@ import { OFFER } from '@/lib/config'
 // pills *below* the sub-copy (see the title block), the way the reference
 // layout stacks headline → sub-headline → proof line → pills.
 const PAIN_POINTS = [
-  'PCOS / PCOD',
   'Thyroid Issues',
   'Insulin Resistance',
   'Excessive Hair Fall',
