@@ -3,11 +3,12 @@
 import dynamic from 'next/dynamic'
 import { RouteFallback } from '@/components/ui/RouteFallback'
 
-const BookACallPage = dynamic(() => import('@/views/BookACallPage'), {
+const LegacyFunnelRedirect = dynamic(() => import('@/views/LegacyFunnelRedirect'), {
   ssr: false,
   loading: () => <RouteFallback />,
 })
 
+// Retired route — see src/views/LegacyFunnelRedirect.tsx.
 export default function Page() {
-  return <BookACallPage />
+  return <LegacyFunnelRedirect />
 }

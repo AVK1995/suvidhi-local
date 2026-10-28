@@ -62,6 +62,8 @@ export interface CheckoutTracking {
   countryCode?: string
   amount?: number
   isTest?: boolean
+  /** Pabbly segregation field — see PurchaseType in src/lib/server/pabbly.ts. */
+  purchaseType?: 'call_only' | 'call_video_library'
   eventSourceUrl?: string
   fbc?: string
   fbp?: string
@@ -79,6 +81,8 @@ export interface CheckoutInput {
   customer?: { name?: string; email?: string; phone?: string }
   /** Internal receipt / reference (max 40 chars per Razorpay). */
   receipt?: string
+  /** Shown in the Razorpay modal. Defaults to the generic offer name. */
+  description?: string
   /**
    * Forwarded to CREATE-ORDER, which packs it into the Razorpay order notes.
    * Razorpay copies order notes onto the payment entity, so the webhook reads
@@ -140,7 +144,7 @@ export async function startCheckout(input: CheckoutInput): Promise<void> {
       amount: order.amount,
       currency: order.currency,
       name: RAZORPAY.companyName,
-      description: OFFER.name,
+      description: input.description ?? OFFER.name,
       prefill: {
         name: input.customer?.name ?? '',
         email: input.customer?.email ?? '',
@@ -234,6 +238,7 @@ async function createOrder(input: {
         },
         fbclid: t?.fbclid ?? '',
         isTest: t?.isTest === true,
+        purchaseType: t?.purchaseType,
       }),
     })
     const data = (await r.json()) as Record<string, unknown>
