@@ -131,7 +131,8 @@ export async function POST(req: Request): Promise<Response> {
   const rawAmount = payment.amount
   const amountPaise =
     typeof rawAmount === 'number' ? rawAmount : Number(str(rawAmount) || '0')
-  const amount = Math.round((Number.isFinite(amountPaise) ? amountPaise : 0) / 100)
+  // Minor → major units to 2dp. Never round to whole units: AED 9.99 must not become 10.
+  const amount = Math.round(Number.isFinite(amountPaise) ? amountPaise : 0) / 100
   const currency = str(payment.currency) || 'INR'
   const createdAtSec =
     typeof payment.created_at === 'number' ? payment.created_at : Math.floor(Date.now() / 1000)

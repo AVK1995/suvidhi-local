@@ -28,9 +28,8 @@ export function Analytics() {
   useEffect(() => {
     onIdle(() => {
       initMetaPixel()
+      // initMetaPixel() already fires the initial PageView.
       pixelReady.current = true
-      // Fire the PageView for the initial route once the pixel is live.
-      pixelTrack('PageView')
     })
   }, [])
 
